@@ -29,7 +29,7 @@ final class Player {
     var createdAt: Date
     var updatedAt: Date
 
-    @Relationship(inverse: \Team.players) var team: Team?
+    @Relationship(inverse: \Team.players) var teams: [Team]?
 
     init(
         firstName: String,

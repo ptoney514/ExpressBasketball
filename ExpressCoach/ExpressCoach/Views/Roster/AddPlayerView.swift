@@ -129,7 +129,12 @@ struct AddPlayerView: View {
         player.height = height.isEmpty ? nil : height
         player.birthDate = birthDate
         player.medicalNotes = medicalNotes.isEmpty ? nil : medicalNotes
-        player.team = team
+
+        // Initialize teams array and add current team
+        if player.teams == nil {
+            player.teams = []
+        }
+        player.teams?.append(team)
 
         modelContext.insert(player)
 

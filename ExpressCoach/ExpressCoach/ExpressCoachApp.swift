@@ -16,7 +16,10 @@ struct ExpressCoachApp: App {
             Player.self,
             Schedule.self,
             Event.self,
-            Announcement.self
+            Announcement.self,
+            AIConversation.self,
+            AIMessage.self,
+            QuickResponse.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -29,8 +32,22 @@ struct ExpressCoachApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            ContentView()
         }
         .modelContainer(sharedModelContainer)
+    }
+}
+
+struct ContentView: View {
+    @Query private var teams: [Team]
+
+    var body: some View {
+        Group {
+            if teams.isEmpty {
+                TeamSelectionView()
+            } else {
+                MainTabView()
+            }
+        }
     }
 }
