@@ -10,9 +10,15 @@ import SwiftData
 
 @main
 struct ExpressUnitedApp: App {
+    @AppStorage("hasJoinedTeam") private var hasJoinedTeam = false
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Team.self,
+            Player.self,
+            Schedule.self,
+            Event.self,
+            Announcement.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -25,7 +31,11 @@ struct ExpressUnitedApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if hasJoinedTeam {
+                MainTabView()
+            } else {
+                TeamCodeEntryView(hasJoinedTeam: $hasJoinedTeam)
+            }
         }
         .modelContainer(sharedModelContainer)
     }
