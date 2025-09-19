@@ -1,0 +1,116 @@
+# Project Status - Express Basketball
+
+## Last Updated: 2025-09-18
+
+## Current Sprint/Phase
+**Phase 1: Foundation** (Week 1-2 of Development Roadmap)
+
+## Completed Features ✅
+
+### ExpressCoach App
+- Basic Xcode project setup with iOS 17.6 target
+- SwiftData models implemented (Team, Player, Schedule, Event, Announcement)
+- Tab-based navigation structure (MainTabView)
+- View hierarchy created for all major features:
+  - Dashboard view
+  - Roster management views
+  - Schedule management views
+  - Announcements view
+  - Settings view
+- Supabase SDK integrated (v2.32.0) but not configured
+
+### ExpressUnited App
+- Basic Xcode project created
+- Project structure exists but no implementation
+
+### Documentation
+- CLAUDE.md with project instructions
+- PROJECT_PLAN.md with complete roadmap
+- TECHNICAL_SPECIFICATION.md with detailed architecture
+
+## In Progress 🚧
+
+- [ ] Setting up project documentation structure
+  - [x] Creating PROJECT_STATUS.md
+  - [ ] Creating WORKFLOW_GUIDE.md
+
+## Pending/Backlog 📋
+
+### Immediate Priority (This Week)
+1. **Supabase Backend Setup**
+   - Create Supabase project
+   - Set up database tables (teams, players, schedules, etc.)
+   - Configure row-level security
+   - Add demo data
+
+2. **Team Code System**
+   - Implement 6-character team code generation
+   - Add team code entry view for ExpressUnited
+   - QR code scanning capability
+
+3. **Demo Profile System**
+   - Create demo profiles for instant app demonstration
+   - Profile switching in settings
+   - Pre-populated demo data
+
+### Next Priority
+4. **ExpressBasketballCore Package**
+   - Create shared Swift package
+   - Move common models to shared package
+   - Implement shared services (Supabase, Notifications)
+
+5. **ExpressUnited Implementation**
+   - Build parent app UI
+   - Read-only views for schedules, roster, announcements
+   - Connect to Supabase for data
+
+6. **Data Synchronization**
+   - Real-time sync between apps
+   - Offline support with SwiftData caching
+   - Conflict resolution
+
+## Known Issues 🐛
+
+1. **Bundle Identifier**: Currently using placeholder `com.yourcompany.ExpressCoach` - needs to be updated before deployment
+2. **Deployment Target**: ExpressUnited shows inconsistency (17.0 vs 17.6) - needs alignment
+3. **Supabase Connection**: SDK integrated but no API keys or configuration present
+
+## Recent Decisions 📝
+
+1. **Two-App Architecture**: Separate apps for parents and coaches to eliminate role-switching complexity
+2. **No Authentication Initially**: Using team codes instead of user accounts for simpler onboarding
+3. **SwiftData for Local Storage**: Chosen for offline-first capability and iOS 17+ integration
+4. **Demo Mode First**: Building demo functionality before real data to enable instant app demonstrations
+
+## Technical Debt 💳
+
+- No error handling implemented yet
+- No unit tests written
+- Supabase service layer not abstracted
+- Hard-coded values in views need to be extracted to constants
+
+## Next Session Goals
+
+1. Complete project setup documentation (WORKFLOW_GUIDE.md)
+2. Create Supabase project and database schema
+3. Configure Supabase connection in ExpressCoach app
+4. Begin implementing team code entry system
+
+## Environment Setup Notes
+
+### Required Tools
+- Xcode 15.0+ installed ✅
+- Supabase CLI (needs installation)
+- iOS Simulator configured ✅
+
+### Configuration Needed
+- Supabase project creation
+- APNS certificates for push notifications
+- App Store Connect setup (future)
+
+## Development Metrics
+
+- **ExpressCoach Progress**: ~25% of Phase 1 complete
+- **ExpressUnited Progress**: ~5% of Phase 1 complete
+- **Backend Setup**: 0% complete
+- **Documentation**: 70% complete
