@@ -1,5 +1,35 @@
 # Workflow Guide - Express Basketball
 
+## 2-Day Sprint Implementation Plan
+
+### Day 1 - Morning: Demo Mode Activation (3-4 hours)
+1. [ ] Hook up DemoDataManager in Settings view
+2. [ ] Add demo mode toggle that persists in UserDefaults
+3. [ ] Call `seedDemoData()` when demo mode activated
+4. [ ] Add visual indicator when in demo mode
+5. [ ] Test data persistence across app restarts
+
+### Day 1 - Afternoon: Roster CRUD Operations (4-5 hours)
+1. [ ] Fix AddPlayerView to save to SwiftData
+2. [ ] Implement edit functionality in PlayerDetailView
+3. [ ] Add swipe-to-delete in RosterView
+4. [ ] Ensure Team relationship is properly maintained
+5. [ ] Add form validation and error handling
+
+### Day 2 - Morning: Schedule Management (4-5 hours)
+1. [ ] Create AddScheduleView with proper form
+2. [ ] Implement edit mode for existing schedules
+3. [ ] Add delete functionality for events
+4. [ ] Create proper date/time pickers
+5. [ ] Group schedules by date in ScheduleView
+
+### Day 2 - Afternoon: Team Code System (3-4 hours)
+1. [ ] Add `teamCode` property to Team model
+2. [ ] Generate 6-character alphanumeric codes
+3. [ ] Display code prominently in TeamDashboard
+4. [ ] Add share functionality (copy/share sheet)
+5. [ ] Create QR code display for easy scanning
+
 ## Development Workflow
 
 ### Starting a New Feature
@@ -300,5 +330,6 @@ Always provide:
 
 ---
 
-*Last Updated: 2025-09-18*
-*Next Review: After Phase 1 completion*
+*Last Updated: 2025-09-19*
+*Sprint Started: 2025-09-19*
+*Sprint Ends: 2025-09-20*

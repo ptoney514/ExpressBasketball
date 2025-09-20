@@ -89,6 +89,7 @@ struct SettingsView: View {
                         }
 
                         if isDemoMode {
+                        Section("Demo Mode") {
                             Text("Sample teams and data loaded for demonstration")
                                 .font(.caption)
                                 .foregroundColor(.gray)
@@ -108,8 +109,8 @@ struct SettingsView: View {
                                     .foregroundColor(.red)
                             }
                         }
+                        .listRowBackground(Color("CoachBlack"))
                     }
-                    .listRowBackground(Color("CoachBlack"))
 
                     Section("AI & Analytics") {
                         NavigationLink(destination: AIInsightsView().preferredColorScheme(.dark)) {
@@ -194,8 +195,6 @@ struct SettingsView: View {
             }
         }
     }
-
-    // MARK: - Private Methods
 
     private func clearAllData() {
         do {

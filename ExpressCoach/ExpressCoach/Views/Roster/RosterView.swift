@@ -120,6 +120,7 @@ struct PlayerListView: View {
     let players: [Player]
     @Binding var selectedPlayer: Player?
     @Binding var showingAddPlayer: Bool
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         List {
@@ -129,6 +130,20 @@ struct PlayerListView: View {
                         selectedPlayer = player
                     }
             }
+            .onDelete(perform: deletePlayer)
+        }
+    }
+
+    private func deletePlayer(at offsets: IndexSet) {
+        for index in offsets {
+            let player = players[index]
+            modelContext.delete(player)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error deleting player: \(error)")
         }
     }
 }

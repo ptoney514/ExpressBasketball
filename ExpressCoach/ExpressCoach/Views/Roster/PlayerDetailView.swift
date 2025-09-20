@@ -66,6 +66,9 @@ struct PlayerDetailView: View {
             } message: {
                 Text("Are you sure you want to delete \(player.fullName)? This action cannot be undone.")
             }
+            .sheet(isPresented: $isEditing) {
+                EditPlayerView(player: player)
+            }
         }
     }
 

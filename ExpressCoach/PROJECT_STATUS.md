@@ -1,6 +1,16 @@
 # Project Status - Express Basketball
 
-## Last Updated: 2025-09-18
+## Last Updated: 2025-09-19
+
+## Current Sprint: 2-Day Quick Wins Sprint
+**Focus: Making Core Features Functional**
+**Timeline: Day 1-2 (Started 2025-09-19)**
+
+### Sprint Goals
+1. **Day 1 Morning**: Activate demo mode with toggle in Settings
+2. **Day 1 Afternoon**: Complete local roster CRUD operations
+3. **Day 2 Morning**: Finish schedule management (add/edit events)
+4. **Day 2 Afternoon**: Implement team code generation and display
 
 ## Current Sprint/Phase
 **Phase 1: Foundation** (Week 1-2 of Development Roadmap)
@@ -30,13 +40,40 @@
 
 ## In Progress 🚧
 
-- [ ] Setting up project documentation structure
-  - [x] Creating PROJECT_STATUS.md
-  - [ ] Creating WORKFLOW_GUIDE.md
+### Current Sprint Tasks
+- [ ] **Day 1 - Morning** ⏰
+  - [ ] Activate demo mode toggle in Settings view
+  - [ ] Hook up DemoDataManager to seed demo data
+  - [ ] Add demo mode indicator in UI
+
+- [ ] **Day 1 - Afternoon** ⏰
+  - [ ] Complete AddPlayerView functionality
+  - [ ] Implement player editing in PlayerDetailView
+  - [ ] Add delete player capability
+  - [ ] Ensure all changes persist in SwiftData
+
+- [ ] **Day 2 - Morning** ⏰
+  - [ ] Create AddScheduleView
+  - [ ] Implement schedule editing
+  - [ ] Add delete schedule capability
+  - [ ] Proper date/time pickers
+
+- [ ] **Day 2 - Afternoon** ⏰
+  - [ ] Generate team codes automatically
+  - [ ] Display team code prominently
+  - [ ] Add share team code functionality
+  - [ ] Store team code in SwiftData model
 
 ## Pending/Backlog 📋
 
-### Immediate Priority (This Week)
+### Quick Wins (Can be done in 1-2 days each)
+1. **Demo Mode with SwiftData** - Ready to activate
+2. **Local Team & Roster Management** - Models ready, needs UI binding
+3. **Schedule & Event Management** - Views built, needs data operations
+4. **Announcements System** - Local storage ready
+5. **Team Code System** - Simple implementation possible
+
+### Immediate Priority (After Sprint)
 1. **Supabase Backend Setup**
    - Create Supabase project
    - Set up database tables (teams, players, schedules, etc.)
