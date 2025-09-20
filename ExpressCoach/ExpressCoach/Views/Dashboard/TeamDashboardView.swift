@@ -372,9 +372,9 @@ struct UpcomingEventsCard: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical)
             } else {
-                VStack(spacing: 12) {
+                VStack(spacing: 8) {
                     ForEach(schedules.prefix(3)) { schedule in
-                        ScheduleCard(schedule: schedule, isCompact: true)
+                        CompactScheduleCard(schedule: schedule)
                     }
                 }
             }

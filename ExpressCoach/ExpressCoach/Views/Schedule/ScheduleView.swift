@@ -289,15 +289,16 @@ struct SelectedDayScheduleList: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(spacing: 8) {
                 ForEach(schedules) { schedule in
-                    ScheduleCard(schedule: schedule)
+                    CompactScheduleCard(schedule: schedule)
                         .onTapGesture {
                             selectedSchedule = schedule
                         }
                 }
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.vertical, 12)
         }
     }
 }
