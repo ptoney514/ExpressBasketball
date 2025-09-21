@@ -17,9 +17,9 @@ struct MainTabView: View {
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
-                TeamDashboardView()
+                HomeView()
                     .tabItem {
-                        Label("Dashboard", systemImage: "sportscourt.fill")
+                        Label("Home", systemImage: "house.fill")
                     }
                     .tag(0)
 
@@ -35,18 +35,11 @@ struct MainTabView: View {
                     }
                     .tag(2)
 
-                AIAssistantView()
+                ProfileView()
                     .tabItem {
-                        Label("Assistant", systemImage: "message.badge.filled.fill")
+                        Label("Profile", systemImage: "person.circle.fill")
                     }
-                    .badge(unreadMessages > 0 ? "\(unreadMessages)" : nil)
                     .tag(3)
-
-                SettingsView()
-                    .tabItem {
-                        Label("Settings", systemImage: "gear")
-                    }
-                    .tag(4)
             }
             .preferredColorScheme(.dark)
             .accentColor(Color("BasketballOrange"))

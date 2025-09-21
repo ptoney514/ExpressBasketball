@@ -65,16 +65,16 @@ class DemoDataManager {
 
         // Add players
         let players = [
-            createPlayer(firstName: "Jordan", lastName: "Smith", jerseyNumber: "23", position: "Point Guard", grade: "6th"),
-            createPlayer(firstName: "Marcus", lastName: "Johnson", jerseyNumber: "11", position: "Shooting Guard", grade: "6th"),
-            createPlayer(firstName: "Tyler", lastName: "Williams", jerseyNumber: "5", position: "Small Forward", grade: "5th"),
-            createPlayer(firstName: "Ethan", lastName: "Davis", jerseyNumber: "32", position: "Power Forward", grade: "6th"),
-            createPlayer(firstName: "Noah", lastName: "Brown", jerseyNumber: "15", position: "Center", grade: "6th"),
-            createPlayer(firstName: "Lucas", lastName: "Martinez", jerseyNumber: "7", position: "Guard", grade: "5th"),
-            createPlayer(firstName: "Mason", lastName: "Garcia", jerseyNumber: "21", position: "Forward", grade: "5th"),
-            createPlayer(firstName: "Jayden", lastName: "Rodriguez", jerseyNumber: "10", position: "Guard", grade: "6th"),
-            createPlayer(firstName: "Aiden", lastName: "Lee", jerseyNumber: "14", position: "Forward", grade: "5th"),
-            createPlayer(firstName: "Dylan", lastName: "Taylor", jerseyNumber: "3", position: "Guard", grade: "6th")
+            createPlayer(firstName: "Jordan", lastName: "Smith", jerseyNumber: "23", position: "Point Guard", graduationYear: 2030),
+            createPlayer(firstName: "Marcus", lastName: "Johnson", jerseyNumber: "11", position: "Shooting Guard", graduationYear: 2030),
+            createPlayer(firstName: "Tyler", lastName: "Williams", jerseyNumber: "5", position: "Small Forward", graduationYear: 2031),
+            createPlayer(firstName: "Ethan", lastName: "Davis", jerseyNumber: "32", position: "Power Forward", graduationYear: 2030),
+            createPlayer(firstName: "Noah", lastName: "Brown", jerseyNumber: "15", position: "Center", graduationYear: 2030),
+            createPlayer(firstName: "Lucas", lastName: "Martinez", jerseyNumber: "7", position: "Guard", graduationYear: 2031),
+            createPlayer(firstName: "Mason", lastName: "Garcia", jerseyNumber: "21", position: "Forward", graduationYear: 2031),
+            createPlayer(firstName: "Jayden", lastName: "Rodriguez", jerseyNumber: "10", position: "Guard", graduationYear: 2030),
+            createPlayer(firstName: "Aiden", lastName: "Lee", jerseyNumber: "14", position: "Forward", graduationYear: 2031),
+            createPlayer(firstName: "Dylan", lastName: "Taylor", jerseyNumber: "3", position: "Guard", graduationYear: 2030)
         ]
 
         team.players = players
@@ -106,18 +106,18 @@ class DemoDataManager {
 
         // Add players
         let players = [
-            createPlayer(firstName: "James", lastName: "Wilson", jerseyNumber: "1", position: "Point Guard", grade: "8th"),
-            createPlayer(firstName: "Michael", lastName: "Anderson", jerseyNumber: "24", position: "Shooting Guard", grade: "8th"),
-            createPlayer(firstName: "Chris", lastName: "Thompson", jerseyNumber: "12", position: "Small Forward", grade: "7th"),
-            createPlayer(firstName: "Kevin", lastName: "White", jerseyNumber: "34", position: "Power Forward", grade: "8th"),
-            createPlayer(firstName: "Brandon", lastName: "Harris", jerseyNumber: "45", position: "Center", grade: "8th"),
-            createPlayer(firstName: "Ryan", lastName: "Clark", jerseyNumber: "8", position: "Guard", grade: "7th"),
-            createPlayer(firstName: "Nathan", lastName: "Lewis", jerseyNumber: "22", position: "Forward", grade: "8th"),
-            createPlayer(firstName: "Justin", lastName: "Walker", jerseyNumber: "13", position: "Guard", grade: "7th"),
-            createPlayer(firstName: "Anthony", lastName: "Hall", jerseyNumber: "30", position: "Forward", grade: "8th"),
-            createPlayer(firstName: "David", lastName: "Young", jerseyNumber: "9", position: "Guard", grade: "7th"),
-            createPlayer(firstName: "Isaiah", lastName: "King", jerseyNumber: "6", position: "Forward", grade: "8th"),
-            createPlayer(firstName: "Caleb", lastName: "Wright", jerseyNumber: "17", position: "Center", grade: "8th")
+            createPlayer(firstName: "James", lastName: "Wilson", jerseyNumber: "1", position: "Point Guard", graduationYear: 2028),
+            createPlayer(firstName: "Michael", lastName: "Anderson", jerseyNumber: "24", position: "Shooting Guard", graduationYear: 2028),
+            createPlayer(firstName: "Chris", lastName: "Thompson", jerseyNumber: "12", position: "Small Forward", graduationYear: 2029),
+            createPlayer(firstName: "Kevin", lastName: "White", jerseyNumber: "34", position: "Power Forward", graduationYear: 2028),
+            createPlayer(firstName: "Brandon", lastName: "Harris", jerseyNumber: "45", position: "Center", graduationYear: 2028),
+            createPlayer(firstName: "Ryan", lastName: "Clark", jerseyNumber: "8", position: "Guard", graduationYear: 2029),
+            createPlayer(firstName: "Nathan", lastName: "Lewis", jerseyNumber: "22", position: "Forward", graduationYear: 2028),
+            createPlayer(firstName: "Justin", lastName: "Walker", jerseyNumber: "13", position: "Guard", graduationYear: 2029),
+            createPlayer(firstName: "Anthony", lastName: "Hall", jerseyNumber: "30", position: "Forward", graduationYear: 2028),
+            createPlayer(firstName: "David", lastName: "Young", jerseyNumber: "9", position: "Guard", graduationYear: 2029),
+            createPlayer(firstName: "Isaiah", lastName: "King", jerseyNumber: "6", position: "Forward", graduationYear: 2028),
+            createPlayer(firstName: "Caleb", lastName: "Wright", jerseyNumber: "17", position: "Center", graduationYear: 2028)
         ]
 
         team.players = players
@@ -138,14 +138,14 @@ class DemoDataManager {
         lastName: String,
         jerseyNumber: String,
         position: String,
-        grade: String
+        graduationYear: Int
     ) -> Player {
         let player = Player(
             firstName: firstName,
             lastName: lastName,
             jerseyNumber: jerseyNumber,
             position: position,
-            grade: grade,
+            graduationYear: graduationYear,
             parentName: "\(firstName)'s Parent",
             parentEmail: "\(firstName.lowercased()).parent@demo.com",
             parentPhone: "555-0\(String(format: "%03d", Int.random(in: 100...999)))",
@@ -161,6 +161,12 @@ class DemoDataManager {
         let now = Date()
         var schedules: [Schedule] = []
 
+        // Create demo venues
+        let venues = createDemoVenues()
+
+        // Practice venue
+        let practiceVenue = venues["practice"]!
+
         // Practice - every Tuesday and Thursday
         for weekOffset in 0..<4 {
             let weekDate = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: now)!
@@ -169,9 +175,10 @@ class DemoDataManager {
             if let tuesdayDate = getNextWeekday(2, from: weekDate) {
                 let practice = Schedule(
                     eventType: .practice,
-                    location: team.practiceLocation ?? "Express Basketball Gym",
+                    location: practiceVenue.name,
                     date: tuesdayDate
                 )
+                practice.venue = practiceVenue
                 practice.notes = "Regular practice session. Bring water and proper gear."
                 schedules.append(practice)
             }
@@ -180,9 +187,10 @@ class DemoDataManager {
             if let thursdayDate = getNextWeekday(4, from: weekDate) {
                 let practice = Schedule(
                     eventType: .practice,
-                    location: team.practiceLocation ?? "Express Basketball Gym",
+                    location: practiceVenue.name,
                     date: thursdayDate
                 )
+                practice.venue = practiceVenue
                 practice.notes = "Regular practice session. Focus on defensive drills."
                 schedules.append(practice)
             }
@@ -190,31 +198,43 @@ class DemoDataManager {
 
         // Games - upcoming Saturday games
         let gameOpponents = ["City Hawks", "Metro Eagles", "Valley Warriors", "Downtown Blazers"]
-        let gameVenues = ["Express Arena", "City Sports Complex", "Express Arena", "Valley Court"]
+        let gameVenueKeys = ["home", "away1", "home", "away2"]
         let isHomeList = [true, false, true, false]
 
         for (index, opponent) in gameOpponents.enumerated() {
             if let gameDate = getNextWeekday(6, from: calendar.date(byAdding: .weekOfYear, value: index, to: now)!) {
+                let venue = venues[gameVenueKeys[index]]!
                 let game = Schedule(
                     eventType: .game,
-                    location: gameVenues[index],
+                    location: venue.name,
                     date: gameDate,
                     isHome: isHomeList[index]
                 )
+                game.venue = venue
                 game.opponent = opponent
                 game.notes = index == 0 ? "Important league game. Arrive 30 minutes early for warm-up." : nil
+
+                // Add arrival time for games
+                game.arrivalTime = calendar.date(byAdding: .minute, value: -45, to: gameDate)
+
                 schedules.append(game)
             }
         }
 
         // Tournament - in 3 weeks
         if let tournamentDate = calendar.date(byAdding: .weekOfYear, value: 3, to: now) {
+            let tournamentVenue = venues["tournament"]!
+            let tournamentHotel = createTournamentHotel()
+
             let tournament = Schedule(
                 eventType: .tournament,
-                location: "Regional Sports Center",
+                location: tournamentVenue.name,
                 date: tournamentDate
             )
+            tournament.venue = tournamentVenue
+            tournament.hotel = tournamentHotel
             tournament.notes = "Spring Championship Tournament. Pool play starts at 8 AM."
+            tournament.arrivalTime = calendar.date(byAdding: .minute, value: -60, to: tournamentDate)
             schedules.append(tournament)
         }
 
@@ -278,6 +298,229 @@ class DemoDataManager {
         return calendar.nextDate(after: date, matching: components, matchingPolicy: .nextTime)
     }
 
+    private func createDemoVenues() -> [String: Venue] {
+        var venues: [String: Venue] = [:]
+
+        // Home Arena
+        let homeArena = Venue(
+            name: "Express Arena",
+            streetAddress: "1234 Basketball Way",
+            city: "Springfield",
+            state: "IL",
+            zipCode: "62701",
+            latitude: 39.7817,
+            longitude: -89.6501,
+            phone: "555-0100",
+            website: "https://expressarena.com",
+            capacity: 2500,
+            courtCount: 2,
+            notes: "Main entrance on north side. Concessions available."
+        )
+
+        // Add parking options for home arena
+        let homeVenueParking = ParkingOption(
+            name: "Arena Main Lot",
+            type: .venueParking,
+            location: "North entrance",
+            pricing: "$10 event parking",
+            distanceFromVenue: 0.1,
+            eventRate: 10,
+            capacity: 500,
+            isPreferred: true
+        )
+
+        let homeStreetParking = ParkingOption(
+            name: "Basketball Way Street",
+            type: .streetParking,
+            location: "Along Basketball Way",
+            pricing: "Free - 2 hour limit",
+            distanceFromVenue: 0.2,
+            dailyRate: 0,
+            notes: "Limited availability on game days"
+        )
+
+        homeArena.parkingOptions = [homeVenueParking, homeStreetParking]
+        venues["home"] = homeArena
+
+        // Practice Facility
+        let practiceGym = Venue(
+            name: "Express Basketball Training Center",
+            streetAddress: "500 Training Dr",
+            city: "Springfield",
+            state: "IL",
+            zipCode: "62702",
+            latitude: 39.7900,
+            longitude: -89.6400,
+            phone: "555-0101",
+            courtCount: 3,
+            notes: "Use side entrance for practices. Code: 1234"
+        )
+
+        let practiceParking = ParkingOption(
+            name: "Training Center Lot",
+            type: .venueParking,
+            location: "Adjacent to building",
+            pricing: "Free for team members",
+            distanceFromVenue: 0,
+            dailyRate: 0,
+            isPreferred: true
+        )
+
+        practiceGym.parkingOptions = [practiceParking]
+        venues["practice"] = practiceGym
+
+        // Away Venue 1
+        let awayVenue1 = Venue(
+            name: "City Sports Complex",
+            streetAddress: "789 Sports Plaza",
+            city: "Capital City",
+            state: "IL",
+            zipCode: "62703",
+            latitude: 39.8200,
+            longitude: -89.6800,
+            phone: "555-0200",
+            capacity: 3000,
+            courtCount: 4
+        )
+
+        let away1Parking = ParkingOption(
+            name: "Sports Complex Garage",
+            type: .publicGarage,
+            location: "East side of complex",
+            pricing: "$15 flat rate",
+            distanceFromVenue: 0.3,
+            eventRate: 15,
+            capacity: 800
+        )
+
+        awayVenue1.parkingOptions = [away1Parking]
+        venues["away1"] = awayVenue1
+
+        // Away Venue 2
+        let awayVenue2 = Venue(
+            name: "Valley Court",
+            streetAddress: "456 Valley Rd",
+            city: "Valley Town",
+            state: "IL",
+            zipCode: "62704",
+            latitude: 39.7500,
+            longitude: -89.7000,
+            phone: "555-0300",
+            capacity: 1500,
+            courtCount: 2
+        )
+
+        let away2Parking = ParkingOption(
+            name: "Valley Court Lot",
+            type: .venueParking,
+            location: "Main entrance",
+            pricing: "$8 event parking",
+            distanceFromVenue: 0.1,
+            eventRate: 8,
+            capacity: 300
+        )
+
+        awayVenue2.parkingOptions = [away2Parking]
+        venues["away2"] = awayVenue2
+
+        // Tournament Venue
+        let tournamentVenue = Venue(
+            name: "Regional Sports Center",
+            streetAddress: "2000 Championship Blvd",
+            city: "Metro City",
+            state: "IL",
+            zipCode: "62705",
+            latitude: 39.8500,
+            longitude: -89.7500,
+            phone: "555-0400",
+            website: "https://regionalsportscenter.com",
+            capacity: 5000,
+            courtCount: 6,
+            notes: "Multiple courts for tournament play. Check court assignments at registration."
+        )
+
+        // Tournament parking options
+        let tournamentMainParking = ParkingOption(
+            name: "Championship Lot A",
+            type: .venueParking,
+            location: "Main entrance off Championship Blvd",
+            pricing: "$20 tournament pass",
+            distanceFromVenue: 0.1,
+            eventRate: 20,
+            capacity: 1000,
+            isPreferred: true,
+            notes: "Tournament pass valid for all weekend"
+        )
+
+        let tournamentOverflow = ParkingOption(
+            name: "Overflow Lot B",
+            type: .privateLot,
+            location: "Access from Stadium Dr",
+            pricing: "$15 daily",
+            distanceFromVenue: 0.5,
+            dailyRate: 15,
+            capacity: 500,
+            notes: "Shuttle service available every 15 minutes"
+        )
+
+        tournamentVenue.parkingOptions = [tournamentMainParking, tournamentOverflow]
+
+        // Add airports for tournament venue
+        let primaryAirport = Airport(
+            name: "Metro International Airport",
+            code: "MIA",
+            city: "Metro City",
+            state: "IL",
+            distanceFromVenue: 25,
+            estimatedDriveTime: 35,
+            publicTransitAvailable: true,
+            publicTransitInstructions: "Take Blue Line to Sports Center Station (45 min, $5)",
+            isPrimary: true
+        )
+
+        let alternateAirport = Airport(
+            name: "Capital Regional Airport",
+            code: "CRA",
+            city: "Capital City",
+            state: "IL",
+            distanceFromVenue: 45,
+            estimatedDriveTime: 55,
+            publicTransitAvailable: false,
+            isPrimary: false
+        )
+
+        tournamentVenue.nearbyAirports = [primaryAirport, alternateAirport]
+
+        venues["tournament"] = tournamentVenue
+
+        return venues
+    }
+
+    private func createTournamentHotel() -> Hotel {
+        let hotel = Hotel(
+            name: "Springfield Marriott Downtown",
+            streetAddress: "100 Hotel Plaza",
+            city: "Metro City",
+            state: "IL",
+            zipCode: "62706",
+            phone: "555-0500",
+            distanceFromVenue: 2.5,
+            teamRate: 129,
+            teamRateCode: "BBALL2025",
+            bookingInstructions: "Mention 'Express Basketball Tournament' when booking. Rate available until 2 weeks before event.",
+            amenities: ["Free WiFi", "Indoor Pool", "Fitness Center", "Complimentary Breakfast", "Shuttle Service"],
+            isOfficialHotel: true
+        )
+
+        hotel.brandName = "Marriott"
+        hotel.website = "https://marriott.com"
+        hotel.checkInTime = "3:00 PM"
+        hotel.checkOutTime = "11:00 AM"
+        hotel.notes = "Shuttle runs every 30 minutes to tournament venue starting at 7 AM"
+
+        return hotel
+    }
+
     func clearAllData(in modelContext: ModelContext) throws {
         // Delete all teams (cascades to related data)
         let teams = try modelContext.fetch(FetchDescriptor<Team>())
@@ -301,6 +544,30 @@ class DemoDataManager {
         let announcements = try modelContext.fetch(FetchDescriptor<Announcement>())
         for announcement in announcements {
             modelContext.delete(announcement)
+        }
+
+        // Delete venues
+        let venues = try modelContext.fetch(FetchDescriptor<Venue>())
+        for venue in venues {
+            modelContext.delete(venue)
+        }
+
+        // Delete hotels
+        let hotels = try modelContext.fetch(FetchDescriptor<Hotel>())
+        for hotel in hotels {
+            modelContext.delete(hotel)
+        }
+
+        // Delete airports
+        let airports = try modelContext.fetch(FetchDescriptor<Airport>())
+        for airport in airports {
+            modelContext.delete(airport)
+        }
+
+        // Delete parking options
+        let parkingOptions = try modelContext.fetch(FetchDescriptor<ParkingOption>())
+        for parking in parkingOptions {
+            modelContext.delete(parking)
         }
 
         try modelContext.save()

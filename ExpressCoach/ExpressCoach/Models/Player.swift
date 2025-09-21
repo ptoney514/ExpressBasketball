@@ -16,7 +16,7 @@ final class Player {
     var jerseyNumber: String
     var position: String
     var height: String?
-    var grade: String
+    var graduationYear: Int
     var birthDate: Date?
     var parentName: String
     var parentEmail: String
@@ -36,7 +36,7 @@ final class Player {
         lastName: String,
         jerseyNumber: String,
         position: String,
-        grade: String,
+        graduationYear: Int,
         parentName: String,
         parentEmail: String,
         parentPhone: String,
@@ -48,7 +48,7 @@ final class Player {
         self.lastName = lastName
         self.jerseyNumber = jerseyNumber
         self.position = position
-        self.grade = grade
+        self.graduationYear = graduationYear
         self.parentName = parentName
         self.parentEmail = parentEmail
         self.parentPhone = parentPhone

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @Environment(\.dismiss) private var dismiss
+    let onComplete: () -> Void
     @State private var currentPage = 0
     @State private var dragOffset: CGSize = .zero
     let totalPages = 7
@@ -35,8 +35,9 @@ struct OnboardingView: View {
                         .tag(5)
 
                     GetStartedPage(onGetStarted: {
+                        // Complete onboarding
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                            dismiss()
+                            onComplete()
                         }
                     })
                     .tag(6)
@@ -1393,5 +1394,7 @@ struct PlayerCard: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(onComplete: {
+        print("Onboarding completed")
+    })
 }

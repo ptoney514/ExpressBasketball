@@ -177,7 +177,9 @@ struct SettingsView: View {
                 Text("This will clear demo data and allow you to connect to live teams. You'll need to enter a team code or select from available teams.")
             }
             .fullScreenCover(isPresented: $showingOnboarding) {
-                OnboardingView()
+                OnboardingView(onComplete: {
+                    showingOnboarding = false
+                })
             }
             .confirmationDialog("Enable Demo Mode", isPresented: $showingEnableDemoMode, titleVisibility: .visible) {
                 Button("Enable Demo Mode") {

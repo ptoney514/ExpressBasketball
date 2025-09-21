@@ -18,7 +18,10 @@ struct SendNotificationView: View {
         case practiceReminder = "Practice Reminder"
         case practiceCancelled = "Practice Cancelled"
         case gameUpdate = "Game Update"
-        case custom = "Custom"
+        case tournamentInfo = "Tournament Info"
+        case teamMeeting = "Team Meeting"
+        case weatherAlert = "Weather Alert"
+        case custom = "Custom Message"
 
         var defaultMessage: String {
             switch self {
@@ -28,8 +31,26 @@ struct SendNotificationView: View {
                 return "Today's practice has been cancelled due to [REASON]. We'll resume our regular schedule [NEXT DATE]. Stay ready!"
             case .gameUpdate:
                 return "Game update: Our game against [OPPONENT] is at [TIME] at [LOCATION]. Arrive [ARRIVAL TIME] for warm-ups. Wear [UNIFORM COLOR] jerseys."
+            case .tournamentInfo:
+                return "Tournament update: [TOURNAMENT NAME] begins [DATE]. Schedule: [SCHEDULE DETAILS]. Location: [VENUE]. Bring all uniforms and equipment."
+            case .teamMeeting:
+                return "Team meeting scheduled for [DATE] at [TIME] at [LOCATION]. Parents are [invited/not required]. Topics: [AGENDA]. Please be on time."
+            case .weatherAlert:
+                return "Due to [WEATHER CONDITIONS], today's [EVENT] at [TIME] is [STATUS]. Check team app for updates. Safety first!"
             case .custom:
                 return ""
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .practiceReminder: return "sportscourt"
+            case .practiceCancelled: return "xmark.circle"
+            case .gameUpdate: return "flag.checkered"
+            case .tournamentInfo: return "trophy"
+            case .teamMeeting: return "person.3"
+            case .weatherAlert: return "cloud.bolt.rain"
+            case .custom: return "text.bubble"
             }
         }
     }
@@ -94,20 +115,60 @@ struct SendNotificationView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
 
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(MessageTemplate.allCases, id: \.self) { template in
-                                    TemplateChip(
-                                        title: template.rawValue,
-                                        isSelected: selectedTemplate == template
-                                    ) {
+                        Menu {
+                            ForEach(MessageTemplate.allCases, id: \.self) { template in
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
                                         selectedTemplate = template
                                         if template != .custom {
                                             messageText = template.defaultMessage
+                                        } else {
+                                            messageText = ""
+                                        }
+                                    }
+                                }) {
+                                    HStack {
+                                        Label(template.rawValue, systemImage: template.icon)
+                                        if selectedTemplate == template {
+                                            Spacer()
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(.blue)
+                                                .font(.caption)
                                         }
                                     }
                                 }
                             }
+                        } label: {
+                            HStack {
+                                Image(systemName: selectedTemplate.icon)
+                                    .foregroundColor(.blue)
+                                    .frame(width: 20)
+                                Text(selectedTemplate.rawValue)
+                                    .foregroundColor(.primary)
+                                    .fontWeight(selectedTemplate != .custom ? .medium : .regular)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(.secondarySystemBackground))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(selectedTemplate != .custom ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        // Template description hint
+                        if selectedTemplate != .custom && !messageText.isEmpty {
+                            Text("Tap the message below to customize the template")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .italic()
                         }
                     }
 
@@ -254,25 +315,6 @@ struct SendNotificationView: View {
     private func sendNotification() {
         // Send notification logic
         dismiss()
-    }
-}
-
-struct TemplateChip: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(isSelected ? Color.blue : Color(.secondarySystemBackground))
-                .foregroundColor(isSelected ? .white : .primary)
-                .cornerRadius(20)
-        }
     }
 }
 

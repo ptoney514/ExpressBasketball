@@ -41,7 +41,7 @@ struct PlayerRow: View {
                         .background(Color("CoachBlack"))
                         .cornerRadius(4)
 
-                    Text("Grade \(player.grade)")
+                    Text("Class of \(String(player.graduationYear))")
                         .font(.caption)
                         .foregroundColor(.gray)
 
@@ -158,7 +158,7 @@ struct PlayerRow_Compact: View {
         lastName: "Jordan",
         jerseyNumber: "23",
         position: "Guard",
-        grade: "9",
+        graduationYear: 2029,
         parentName: "James Jordan",
         parentEmail: "james.jordan@email.com",
         parentPhone: "(555) 123-4567",

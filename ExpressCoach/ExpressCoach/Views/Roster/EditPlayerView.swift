@@ -17,7 +17,7 @@ struct EditPlayerView: View {
     @State private var lastName: String = ""
     @State private var jerseyNumber: String = ""
     @State private var position: String = "Guard"
-    @State private var grade: String = "6"
+    @State private var graduationYear: Int = Calendar.current.component(.year, from: Date()) + 6
     @State private var height: String = ""
     @State private var birthDate: Date = Date()
     @State private var showBirthDate: Bool = false
@@ -30,7 +30,7 @@ struct EditPlayerView: View {
     @State private var medicalNotes: String = ""
 
     let positions = ["Guard", "Forward", "Center", "Point Guard", "Shooting Guard", "Small Forward", "Power Forward"]
-    let grades = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+    let currentYear = Calendar.current.component(.year, from: Date())
 
     var body: some View {
         NavigationStack {
@@ -47,9 +47,9 @@ struct EditPlayerView: View {
                         }
                     }
 
-                    Picker("Grade", selection: $grade) {
-                        ForEach(grades, id: \.self) { grade in
-                            Text(grade).tag(grade)
+                    Picker("Graduation Year", selection: $graduationYear) {
+                        ForEach((currentYear...(currentYear + 15)), id: \.self) { year in
+                            Text("Class of \(year)").tag(year)
                         }
                     }
 
@@ -122,7 +122,7 @@ struct EditPlayerView: View {
         lastName = player.lastName
         jerseyNumber = player.jerseyNumber
         position = player.position
-        grade = player.grade
+        graduationYear = player.graduationYear
         height = player.height ?? ""
 
         if let playerBirthDate = player.birthDate {
@@ -143,7 +143,7 @@ struct EditPlayerView: View {
         player.lastName = lastName
         player.jerseyNumber = jerseyNumber
         player.position = position
-        player.grade = grade
+        player.graduationYear = graduationYear
         player.height = height.isEmpty ? nil : height
         player.birthDate = showBirthDate ? birthDate : nil
 

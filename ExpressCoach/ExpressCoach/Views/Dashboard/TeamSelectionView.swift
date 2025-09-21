@@ -251,10 +251,11 @@ struct TeamSelectionView: View {
             } message: {
                 Text("This will create sample teams and players for demonstration purposes. You can switch to live data later in settings.")
             }
-            .fullScreenCover(isPresented: $showingOnboarding, onDismiss: {
-                activateDemoMode()
-            }) {
-                OnboardingView()
+            .fullScreenCover(isPresented: $showingOnboarding) {
+                OnboardingView(onComplete: {
+                    showingOnboarding = false
+                    activateDemoMode()
+                })
             }
         }
     }

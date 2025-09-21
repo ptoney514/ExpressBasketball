@@ -28,6 +28,9 @@ final class Schedule {
 
     @Relationship(inverse: \Team.schedules) var team: Team?
     @Relationship(deleteRule: .cascade) var events: [Event]?
+    // Relationships with Venue and Hotel
+    var venue: Venue?
+    var hotel: Hotel?
 
     init(
         eventType: EventType,

@@ -32,6 +32,7 @@ struct CompactScheduleCard: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.white)
+                        .fixedSize(horizontal: true, vertical: false)
                 } else if let result = schedule.result,
                           let teamScore = schedule.teamScore,
                           let opponentScore = schedule.opponentScore {
@@ -51,7 +52,7 @@ struct CompactScheduleCard: View {
                     .foregroundColor(eventTypeColor)
                     .textCase(.uppercase)
             }
-            .frame(width: 65, alignment: .leading)
+            .frame(minWidth: 75, alignment: .leading)
 
             // Main content
             VStack(alignment: .leading, spacing: 4) {

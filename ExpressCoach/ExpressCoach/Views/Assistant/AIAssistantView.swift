@@ -4,104 +4,13 @@ import SwiftData
 struct AIAssistantView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \AIConversation.updatedAt, order: .reverse) private var conversations: [AIConversation]
-    @State private var selectedMode = AssistantMode.home
-    @State private var showingSendNotification = false
-    @State private var showingCompose = false
-    @State private var selectedConversation: AIConversation?
-
-    enum AssistantMode: String, CaseIterable {
-        case home = "AI Assistant"
-        case inbox = "Inbox"
-        case templates = "Templates"
-
-        var icon: String {
-            switch self {
-            case .home:
-                return "sparkles"
-            case .inbox:
-                return "tray"
-            case .templates:
-                return "text.bubble"
-            }
-        }
-    }
-
-    var unreadCount: Int {
-        conversations.filter { !$0.isRead }.count
-    }
-
-    var urgentCount: Int {
-        conversations.filter { $0.priority == .urgent && $0.status != .resolved }.count
-    }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                if urgentCount > 0 {
-                    UrgentBanner(count: urgentCount)
-                }
-
-                Picker("Mode", selection: $selectedMode) {
-                    ForEach(AssistantMode.allCases, id: \.self) { mode in
-                        HStack {
-                            Image(systemName: mode.icon)
-                            Text(mode.rawValue)
-                        }
-                        .tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding()
-
-                Group {
-                    switch selectedMode {
-                    case .home:
-                        AIHomeView(
-                            showingSendNotification: $showingSendNotification,
-                            selectedConversation: $selectedConversation
-                        )
-                    case .inbox:
-                        InboxView(selectedConversation: $selectedConversation)
-                    case .templates:
-                        QuickResponsesView()
-                    }
-                }
+        // Use the new Perplexity-style interface
+        PerplexityStyleAssistantView()
+            .onAppear {
+                setupDemoDataIfNeeded()
             }
-            .navigationTitle("AI Assistant")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingCompose = true }) {
-                        Image(systemName: "square.and.pencil")
-                    }
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button(action: markAllAsRead) {
-                            Label("Mark All Read", systemImage: "envelope.open")
-                        }
-                        Button(action: archiveResolved) {
-                            Label("Archive Resolved", systemImage: "archivebox")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
-            .sheet(isPresented: $showingCompose) {
-                ComposeMessageView()
-            }
-            .sheet(isPresented: $showingSendNotification) {
-                SendNotificationView()
-            }
-            .sheet(item: $selectedConversation) { conversation in
-                ConversationDetailView(conversation: conversation)
-            }
-        }
-        .onAppear {
-            setupDemoDataIfNeeded()
-        }
     }
 
     private func markAllAsRead() {
@@ -168,21 +77,21 @@ struct InsightsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                StatCard(
+                AssistantStatCard(
                     title: "Response Rate",
                     value: String(format: "%.0f%%", responseRate),
                     icon: "checkmark.circle.fill",
                     color: .green
                 )
 
-                StatCard(
+                AssistantStatCard(
                     title: "Avg Response Time",
                     value: averageResponseTime,
                     icon: "clock.fill",
                     color: .blue
                 )
 
-                StatCard(
+                AssistantStatCard(
                     title: "Most Common Topic",
                     value: mostCommonCategory.rawValue,
                     icon: mostCommonCategory.icon,
@@ -228,7 +137,7 @@ struct InsightsView: View {
     }
 }
 
-struct StatCard: View {
+struct AssistantStatCard: View {
     let title: String
     let value: String
     let icon: String

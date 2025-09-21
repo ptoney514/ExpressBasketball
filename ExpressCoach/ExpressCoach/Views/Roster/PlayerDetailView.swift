@@ -106,7 +106,7 @@ struct PlayerHeaderSection: View {
                 HStack {
                     Label(player.position, systemImage: "figure.basketball")
                     Text("•")
-                    Text("Grade \(player.grade)")
+                    Text("Class of \(String(player.graduationYear))")
                 }
                 .font(.subheadline)
                 .foregroundColor(.secondary)

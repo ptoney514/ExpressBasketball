@@ -18,7 +18,7 @@ struct AddPlayerView: View {
     @State private var lastName = ""
     @State private var jerseyNumber = ""
     @State private var position = "Guard"
-    @State private var grade = "6"
+    @State private var graduationYear = Calendar.current.component(.year, from: Date()) + 6
     @State private var height = ""
     @State private var birthDate = Date()
 
@@ -30,7 +30,7 @@ struct AddPlayerView: View {
     @State private var medicalNotes = ""
 
     let positions = ["Guard", "Forward", "Center", "Point Guard", "Shooting Guard", "Small Forward", "Power Forward"]
-    let grades = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+    let currentYear = Calendar.current.component(.year, from: Date())
 
     var body: some View {
         NavigationStack {
@@ -47,9 +47,9 @@ struct AddPlayerView: View {
                         }
                     }
 
-                    Picker("Grade", selection: $grade) {
-                        ForEach(grades, id: \.self) { grade in
-                            Text(grade).tag(grade)
+                    Picker("Graduation Year", selection: $graduationYear) {
+                        ForEach((currentYear...(currentYear + 15)), id: \.self) { year in
+                            Text("Class of \(year)").tag(year)
                         }
                     }
 
@@ -118,7 +118,7 @@ struct AddPlayerView: View {
             lastName: lastName,
             jerseyNumber: jerseyNumber,
             position: position,
-            grade: grade,
+            graduationYear: graduationYear,
             parentName: parentName,
             parentEmail: parentEmail,
             parentPhone: parentPhone,

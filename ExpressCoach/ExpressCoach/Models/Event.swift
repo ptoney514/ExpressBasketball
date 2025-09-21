@@ -23,6 +23,8 @@ final class Event {
     var updatedAt: Date
 
     @Relationship(inverse: \Schedule.events) var schedule: Schedule?
+    // Relationship with Venue
+    var venue: Venue?
 
     init(
         title: String,

@@ -168,7 +168,7 @@ struct PlayerRowView: View {
                         .foregroundColor(.secondary)
                     Text("•")
                         .foregroundColor(.secondary)
-                    Text("Grade \(player.grade)")
+                    Text("Class of \(String(player.graduationYear))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
