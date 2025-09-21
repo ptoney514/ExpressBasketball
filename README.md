@@ -1,6 +1,15 @@
-# Express Basketball
+# Express Basketball 🏀
 
-Two-app iOS system for youth basketball team management.
+A monorepo containing two complementary iOS apps for youth basketball team management.
+
+## Repository Structure
+
+```
+ExpressBasketball/
+├── ExpressCoach/           # Staff management app
+├── ExpressUnited/          # Parent viewing app
+└── ExpressBasketballCore/  # Shared components (planned)
+```
 
 ## Overview
 
@@ -35,13 +44,19 @@ Express Basketball provides separate, focused iOS applications for different use
 
 ## Project Status
 
-Currently in Phase 1: Foundation development. See [PROJECT_STATUS.md](ExpressCoach/PROJECT_STATUS.md) for details.
+Currently in Phase 1: Foundation development.
+
+- **ExpressCoach**: Basic SwiftUI structure with SwiftData models ([Status](ExpressCoach/PROJECT_STATUS.md))
+- **ExpressUnited**: Initial project setup ([Status](ExpressUnited/PROJECT_STATUS.md))
+- **Backend**: Supabase SDK integrated, awaiting configuration
 
 ## Documentation
 
-- [Project Plan](PROJECT_PLAN.md) - Strategic roadmap
+- [Project Plan](PROJECT_PLAN.md) - Strategic roadmap and features
 - [Technical Specification](TECHNICAL_SPECIFICATION.md) - Architecture details
-- [Development Guide](ExpressCoach/WORKFLOW_GUIDE.md) - How to contribute
+- [Claude Code Guide](CLAUDE.md) - AI assistant configuration
+- [ExpressCoach Workflow](ExpressCoach/WORKFLOW_GUIDE.md) - Coach app development
+- [ExpressUnited Workflow](ExpressUnited/WORKFLOW_GUIDE.md) - Parent app development
 
 ## Getting Started
 
@@ -54,24 +69,30 @@ Currently in Phase 1: Foundation development. See [PROJECT_STATUS.md](ExpressCoa
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ExpressBasketball.git
+git clone https://github.com/ptoney514/ExpressBasketball.git
 cd ExpressBasketball
 
-# Open ExpressCoach in Xcode
+# Build ExpressCoach (Staff App)
 open ExpressCoach/ExpressCoach.xcodeproj
+# or via command line:
+xcodebuild -project ExpressCoach/ExpressCoach.xcodeproj \
+  -scheme ExpressCoach \
+  -destination 'platform=iOS Simulator,name=iPhone 15 Pro' build
 
-# Or build from command line
-xcodebuild -project ExpressCoach/ExpressCoach.xcodeproj -scheme ExpressCoach -destination 'platform=iOS Simulator,name=iPhone 15 Pro' build
+# Build ExpressUnited (Parent App)
+open ExpressUnited/ExpressUnited.xcodeproj
+# or via command line:
+xcodebuild -project ExpressUnited/ExpressUnited.xcodeproj \
+  -scheme ExpressUnited \
+  -destination 'platform=iOS Simulator,name=iPhone 15 Pro' build
 ```
 
-## Project Structure
+### Running Tests
 
-```
-ExpressBasketball/
-├── ExpressCoach/        # Staff management app
-├── ExpressUnited/       # Parent viewing app
-├── ExpressBasketballCore/ # Shared Swift package (planned)
-└── Documentation/       # Project documentation
+```bash
+# Test both apps
+xcodebuild test -project ExpressCoach/ExpressCoach.xcodeproj -scheme ExpressCoach -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+xcodebuild test -project ExpressUnited/ExpressUnited.xcodeproj -scheme ExpressUnited -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
 ```
 
 ## Contributing

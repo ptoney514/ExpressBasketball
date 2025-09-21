@@ -41,16 +41,16 @@
 ## In Progress 🚧
 
 ### Current Sprint Tasks
-- [ ] **Day 1 - Morning** ⏰
-  - [ ] Activate demo mode toggle in Settings view
-  - [ ] Hook up DemoDataManager to seed demo data
-  - [ ] Add demo mode indicator in UI
+- [x] **Day 1 - Morning** ✅
+  - [x] Activate demo mode toggle in Settings view
+  - [x] Hook up DemoDataManager to seed demo data
+  - [x] Add demo mode indicator in UI
 
-- [ ] **Day 1 - Afternoon** ⏰
-  - [ ] Complete AddPlayerView functionality
-  - [ ] Implement player editing in PlayerDetailView
-  - [ ] Add delete player capability
-  - [ ] Ensure all changes persist in SwiftData
+- [x] **Day 1 - Afternoon** ✅
+  - [x] Complete AddPlayerView functionality
+  - [x] Implement player editing in PlayerDetailView
+  - [x] Add delete player capability
+  - [x] Ensure all changes persist in SwiftData
 
 - [ ] **Day 2 - Morning** ⏰
   - [ ] Create AddScheduleView

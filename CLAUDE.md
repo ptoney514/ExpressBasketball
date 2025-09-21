@@ -44,6 +44,17 @@ xcodebuild test -project ExpressUnited/ExpressUnited.xcodeproj -scheme ExpressUn
 xcodebuild test -project ExpressCoach/ExpressCoach.xcodeproj -scheme ExpressCoach -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -only-testing:ExpressCoachTests/TestClassName
 ```
 
+### Lint Commands (when configured)
+```bash
+# SwiftLint (if installed)
+swiftlint lint ExpressCoach/
+swiftlint lint ExpressUnited/
+
+# Swift format (if installed)
+swift-format -i -r ExpressCoach/
+swift-format -i -r ExpressUnited/
+```
+
 ## Architecture
 
 ### Project Structure
@@ -85,10 +96,27 @@ Main navigation via `MainTabView` with five tabs:
 
 ## Current Implementation Status
 
-- **ExpressCoach**: Basic SwiftUI app with SwiftData models and view structure implemented
-- **ExpressUnited**: Basic Xcode project structure exists
-- **ExpressBasketballCore**: Directory exists but Swift package not yet created
-- **Backend**: Supabase SDK integrated but not yet configured
+### ExpressCoach (Staff App) ✅
+- Basic SwiftUI app with SwiftData models implemented
+- Tab navigation (MainTabView) with 5 sections
+- View hierarchy for all features complete
+- Supabase SDK integrated (not configured)
+- Models: Team, Player, Schedule, Event, Announcement
+
+### ExpressUnited (Parent App) 🚧
+- Basic Xcode project structure exists
+- SwiftData setup with placeholder Item model
+- Supabase SDK integrated (not configured)
+- Needs: View implementation, team code system
+
+### ExpressBasketballCore (Shared) ❌
+- Directory exists but Swift package not yet created
+- Will contain shared models and services
+
+### Backend Infrastructure 🚧
+- Supabase SDK integrated in both apps (v2.32.0)
+- Database schema pending
+- Row-level security not configured
 
 ## Important Development Notes
 
@@ -99,7 +127,21 @@ Main navigation via `MainTabView` with five tabs:
 
 ## Key Files for Context
 
+### Workspace Documentation
 - `PROJECT_PLAN.md`: Complete development roadmap and features
 - `TECHNICAL_SPECIFICATION.md`: Detailed technical architecture
+- `README.md`: Project overview and setup
+- `TECHNICAL_DEBT.md`: Technical compromises and future improvements
+- `ERROR_LOG.md`: Common errors and their solutions
+- `CLAUDE_CODE_SETUP.md`: Best practices for Claude Code collaboration
+
+### ExpressCoach Files
 - `ExpressCoach/ExpressCoachApp.swift`: Main app entry point with SwiftData setup
 - `ExpressCoach/Views/MainTabView.swift`: Primary navigation structure
+- `ExpressCoach/PROJECT_STATUS.md`: Current development status for coach app
+- `ExpressCoach/WORKFLOW_GUIDE.md`: Development procedures for coach app
+
+### ExpressUnited Files
+- `ExpressUnited/ExpressUnitedApp.swift`: Parent app entry point
+- `ExpressUnited/PROJECT_STATUS.md`: Current development status for parent app
+- `ExpressUnited/WORKFLOW_GUIDE.md`: Development procedures for parent app

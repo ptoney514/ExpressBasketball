@@ -122,8 +122,10 @@ Temporary Items
 supabase/.temp/
 supabase/.branches/
 
-# Claude Code
-.claude/
+# Claude Code workspace agents (keep root .claude for workspace-level configs)
+ExpressCoach/.claude/
+ExpressUnited/.claude/
+ExpressBasketballCore/.claude/
 
 # Private keys and secrets
 *.pem
