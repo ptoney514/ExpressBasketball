@@ -23,9 +23,9 @@ struct MainTabView: View {
                     }
                     .tag(0)
 
-                RosterView()
+                TeamRosterListView()
                     .tabItem {
-                        Label("Roster", systemImage: "person.3.fill")
+                        Label("Team Roster", systemImage: "person.3.fill")
                     }
                     .tag(1)
 
