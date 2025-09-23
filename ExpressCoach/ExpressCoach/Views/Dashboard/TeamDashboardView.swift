@@ -145,22 +145,32 @@ struct TeamDetailDashboard: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Team overview using our new TeamCard component
+            VStack(alignment: .leading, spacing: 24) {
+                // Team overview card
                 TeamCard(team: team)
+                    .id("team-card")
 
-                // Coach-specific quick actions
-                CoachActionsCard(
+                // COMMUNICATION HUB - PRIMARY FOCUS
+                // Recent Messages is the centerpiece of the dashboard
+                RecentMessagesCard(team: team)
+                    .id("recent-messages")
+                    .shadow(color: Color("BasketballOrange").opacity(0.1), radius: 8, x: 0, y: 2)
+
+                // This week's upcoming events
+                ThisWeekEventsCard(schedules: upcomingSchedules)
+                    .id("this-week")
+
+                // Quick actions for coaches (secondary)
+                CoachQuickActions(
                     team: team,
                     showingNotificationComposer: $showingNotificationComposer,
                     showingPracticeActions: $showingPracticeActions
                 )
+                .id("quick-actions")
 
-                // Upcoming events with enhanced styling
-                UpcomingEventsCard(schedules: upcomingSchedules)
-
-                // Quick stats
+                // Season overview stats
                 QuickStatsCard(team: team)
+                    .id("stats")
             }
             .padding()
         }
@@ -186,8 +196,8 @@ struct TeamDetailDashboard: View {
     }
 }
 
-// New coach-centric actions card
-struct CoachActionsCard: View {
+// Coach quick actions card
+struct CoachQuickActions: View {
     let team: Team
     @Binding var showingNotificationComposer: Bool
     @Binding var showingPracticeActions: Bool
@@ -195,49 +205,54 @@ struct CoachActionsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Coach Actions")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .foregroundColor(.gray)
+                    Text("Quick Actions")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.gray)
+                }
 
                 Spacer()
 
                 Text(team.coachRole.displayName)
-                    .font(.caption)
-                    .foregroundColor(Color("BasketballOrange"))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color("CoachBlack"))
-                    .cornerRadius(6)
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(4)
             }
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 CoachActionButton(
-                    title: "Send Practice Reminder",
-                    icon: "bell.fill",
+                    title: "Message Team",
+                    icon: "message.fill",
                     color: Color("BasketballOrange"),
                     action: { showingNotificationComposer = true }
                 )
 
                 CoachActionButton(
-                    title: "Practice Actions",
+                    title: "Send Alert",
+                    icon: "bell.badge.fill",
+                    color: Color.red,
+                    action: { showingNotificationComposer = true }
+                )
+
+                CoachActionButton(
+                    title: "Practice Update",
                     icon: "figure.basketball",
                     color: Color("CourtGreen"),
                     action: { showingPracticeActions = true }
                 )
 
                 CoachActionButton(
-                    title: "Team Announcement",
-                    icon: "megaphone.fill",
-                    color: Color.blue,
-                    action: { showingNotificationComposer = true }
-                )
-
-                CoachActionButton(
-                    title: "Update Schedule",
+                    title: "Add Event",
                     icon: "calendar.badge.plus",
                     color: Color.purple,
                     action: {
-                        // TODO: Navigate to schedule
+                        // TODO: Navigate to add schedule
                     }
                 )
             }
@@ -246,7 +261,7 @@ struct CoachActionsCard: View {
         .background(Color("BackgroundDark"))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color("BasketballOrange").opacity(0.3), lineWidth: 1)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
         .cornerRadius(12)
     }
@@ -341,18 +356,22 @@ struct StatItem: View {
     }
 }
 
-struct UpcomingEventsCard: View {
+struct ThisWeekEventsCard: View {
     let schedules: [Schedule]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Upcoming Events")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                HStack(spacing: 8) {
+                    Image(systemName: "calendar")
+                        .foregroundColor(Color("BasketballOrange"))
+                    Text("This Week")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                }
                 Spacer()
                 NavigationLink(destination: ScheduleView()) {
-                    Text("See All")
+                    Text("Full Schedule")
                         .font(.caption)
                         .foregroundColor(Color("BasketballOrange"))
                 }
@@ -360,11 +379,11 @@ struct UpcomingEventsCard: View {
 
             if schedules.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "calendar")
+                    Image(systemName: "calendar.badge.minus")
                         .font(.title2)
                         .foregroundColor(.gray)
 
-                    Text("No upcoming events scheduled")
+                    Text("No events this week")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)

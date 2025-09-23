@@ -50,13 +50,13 @@ struct HomeView: View {
                     //     teamOverviewSection
                     // }
 
-                    // Upcoming Events
+                    // Recent Messages - Primary communication focus (moved above This Week)
+                    RecentMessagesCard(team: currentTeam ?? Team(name: "Express Lightning", ageGroup: "U14", coachName: "Coach", coachRole: .headCoach))
+
+                    // This Week's Events
                     if !upcomingEvents.isEmpty {
                         upcomingEventsSection
                     }
-
-                    // Recent Activity
-                    recentActivitySection
                 }
                 .padding()
             }
@@ -236,36 +236,6 @@ struct HomeView: View {
         }
     }
 
-    private var recentActivitySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Activity")
-                .font(.headline)
-                .foregroundColor(.white)
-
-            VStack(spacing: 8) {
-                ActivityRow(
-                    icon: "megaphone.fill",
-                    text: "Team announcement sent",
-                    time: "2 hours ago",
-                    color: .blue
-                )
-
-                ActivityRow(
-                    icon: "person.badge.plus",
-                    text: "New player added",
-                    time: "Yesterday",
-                    color: .green
-                )
-
-                ActivityRow(
-                    icon: "calendar.badge.plus",
-                    text: "Practice scheduled",
-                    time: "2 days ago",
-                    color: .orange
-                )
-            }
-        }
-    }
 }
 
 // MARK: - Supporting Views
@@ -372,41 +342,6 @@ struct CompactEventCard: View {
         .padding()
         .background(Color("CoachBlack"))
         .cornerRadius(12)
-    }
-}
-
-struct ActivityRow: View {
-    let icon: String
-    let text: String
-    let time: String
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 32, height: 32)
-
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundColor(color)
-            }
-
-            Text(text)
-                .font(.caption)
-                .foregroundColor(.white)
-
-            Spacer()
-
-            Text(time)
-                .font(.caption2)
-                .foregroundColor(.gray)
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color("CoachBlack"))
-        .cornerRadius(8)
     }
 }
 
