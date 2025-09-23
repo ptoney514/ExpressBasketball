@@ -41,6 +41,11 @@ struct HomeView: View {
                     // Welcome Header
                     welcomeSection
 
+                    // Team Code - Prominent display for demo
+                    if let team = currentTeam {
+                        TeamCodeCard(team: team)
+                    }
+
                     // AI Quick Actions integrated seamlessly
                     aiQuickActionsSection
 
