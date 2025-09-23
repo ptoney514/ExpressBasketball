@@ -322,7 +322,7 @@ struct AICommunicationHub: View {
         // Simulate delivery status update
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             if let index = recentMessages.firstIndex(where: { $0.id == newMessage.id }) {
-                var updatedMessage = recentMessages[index]
+                let updatedMessage = recentMessages[index]
                 recentMessages[index] = CommunicationMessage(
                     content: updatedMessage.content,
                     recipients: updatedMessage.recipients,

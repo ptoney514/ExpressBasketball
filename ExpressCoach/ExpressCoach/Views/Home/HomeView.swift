@@ -17,6 +17,7 @@ struct HomeView: View {
     @State private var selectedAIAction: AIQuickAction?
     @State private var showingAIAssistantCoach = false
     @State private var showingAddSchedule = false
+    @State private var showingTeamCode = false
 
     var currentTeam: Team? {
         teams.first
@@ -41,7 +42,7 @@ struct HomeView: View {
                     // Welcome Header
                     welcomeSection
 
-                    // AI Quick Actions integrated seamlessly
+                    // AI Quick Actions integrated seamlessly (Team Code button added here)
                     aiQuickActionsSection
 
                     // Team Overview Stats - Removed per user request
@@ -50,13 +51,13 @@ struct HomeView: View {
                     //     teamOverviewSection
                     // }
 
-                    // Upcoming Events
+                    // Recent Messages - Primary communication focus (moved above This Week)
+                    RecentMessagesCard(team: currentTeam ?? Team(name: "Express Lightning", ageGroup: "U14", coachName: "Coach", coachRole: .headCoach))
+
+                    // This Week's Events
                     if !upcomingEvents.isEmpty {
                         upcomingEventsSection
                     }
-
-                    // Recent Activity
-                    recentActivitySection
                 }
                 .padding()
             }
@@ -84,6 +85,11 @@ struct HomeView: View {
             .sheet(isPresented: $showingAddSchedule) {
                 if let team = currentTeam {
                     AddScheduleView(team: team)
+                }
+            }
+            .sheet(isPresented: $showingTeamCode) {
+                if let team = currentTeam {
+                    TeamCodeDetailView(team: team)
                 }
             }
         }
@@ -143,14 +149,13 @@ struct HomeView: View {
                     showingNotificationComposer = true
                 }
 
-                // Draft Message (top-right)
+                // Team Code (top-right)
                 HomeCoachActionButton(
-                    icon: "message.fill",
-                    title: "Draft Message",
+                    icon: "qrcode",
+                    title: "Team Code",
                     color: .green
                 ) {
-                    selectedAIAction = .draftMessage
-                    showingAIChat = true
+                    showingTeamCode = true
                 }
 
                 // AI Assistant Coach (bottom-left)
@@ -236,36 +241,6 @@ struct HomeView: View {
         }
     }
 
-    private var recentActivitySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Activity")
-                .font(.headline)
-                .foregroundColor(.white)
-
-            VStack(spacing: 8) {
-                ActivityRow(
-                    icon: "megaphone.fill",
-                    text: "Team announcement sent",
-                    time: "2 hours ago",
-                    color: .blue
-                )
-
-                ActivityRow(
-                    icon: "person.badge.plus",
-                    text: "New player added",
-                    time: "Yesterday",
-                    color: .green
-                )
-
-                ActivityRow(
-                    icon: "calendar.badge.plus",
-                    text: "Practice scheduled",
-                    time: "2 days ago",
-                    color: .orange
-                )
-            }
-        }
-    }
 }
 
 // MARK: - Supporting Views
@@ -372,41 +347,6 @@ struct CompactEventCard: View {
         .padding()
         .background(Color("CoachBlack"))
         .cornerRadius(12)
-    }
-}
-
-struct ActivityRow: View {
-    let icon: String
-    let text: String
-    let time: String
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 32, height: 32)
-
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundColor(color)
-            }
-
-            Text(text)
-                .font(.caption)
-                .foregroundColor(.white)
-
-            Spacer()
-
-            Text(time)
-                .font(.caption2)
-                .foregroundColor(.gray)
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color("CoachBlack"))
-        .cornerRadius(8)
     }
 }
 

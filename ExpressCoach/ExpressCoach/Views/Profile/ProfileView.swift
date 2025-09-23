@@ -13,6 +13,7 @@ struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var showingSettings = false
     @State private var showingEditProfile = false
+    @State private var showingTeamCode = false
     @State private var coachName = "Coach"
     @State private var coachTitle = "Head Coach"
     @State private var coachBio = ""
@@ -80,6 +81,11 @@ struct ProfileView: View {
                     coachBio: $coachBio,
                     yearsCoaching: $yearsCoaching
                 )
+            }
+            .sheet(isPresented: $showingTeamCode) {
+                if let team = currentTeam {
+                    QRCodeView(team: team)
+                }
             }
             .onAppear {
                 loadProfileData()
@@ -229,7 +235,7 @@ struct ProfileView: View {
                     title: "Share Code",
                     color: Color("BasketballOrange")
                 ) {
-                    // TODO: Show team code sharing
+                    showingTeamCode = true
                 }
 
                 QuickActionButton(

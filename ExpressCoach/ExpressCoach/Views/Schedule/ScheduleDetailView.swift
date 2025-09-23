@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ScheduleDetailView: View {
     let schedule: Schedule
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedTab = 0
+    @State private var showingEditView = false
+    @State private var showingDeleteAlert = false
 
     private var isTournament: Bool {
         schedule.eventType == .tournament
@@ -197,12 +201,53 @@ struct ScheduleDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button {
+                            showingEditView = true
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+
+                        Button(role: .destructive) {
+                            showingDeleteAlert = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundColor(Color("BasketballOrange"))
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Done") {
                         dismiss()
                     }
                     .foregroundColor(Color("BasketballOrange"))
                 }
             }
+            .sheet(isPresented: $showingEditView) {
+                EditScheduleView(schedule: schedule)
+            }
+            .alert("Delete Event?", isPresented: $showingDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    deleteSchedule()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This action cannot be undone.")
+            }
+        }
+    }
+
+    private func deleteSchedule() {
+        modelContext.delete(schedule)
+
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            print("Error deleting schedule: \(error)")
         }
     }
 

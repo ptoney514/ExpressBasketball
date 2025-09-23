@@ -355,8 +355,8 @@ struct PerplexityStyleAssistantView: View {
                 body = "Important tournament information: \(details)\n\nPlease mark your calendars."
             case .urgentUpdate:
                 body = "URGENT: \(details)\n\nPlease acknowledge receipt of this message."
-            default:
-                break
+            case .practiceTips, .gamePlan, .drillSuggestion, .playerMotivation:
+                break // These cases are handled in other branches
             }
 
         case .practiceTips:
@@ -456,10 +456,6 @@ struct PerplexityStyleAssistantView: View {
 
             You're becoming not just better players, but better people. Keep working hard!
             """
-
-        default:
-            greeting = "Team,"
-            closing = "\n\nCoach"
         }
 
         return "\(greeting)\n\n\(body)\(closing)"

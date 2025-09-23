@@ -12,6 +12,7 @@ import Combine
 struct ScheduleView: View {
     @Query(sort: \Schedule.date, order: .forward) private var schedules: [Schedule]
     @Query private var teams: [Team]
+    @Environment(\.modelContext) private var modelContext
     @State private var showingAddEvent = false
     @State private var selectedSchedule: Schedule?
     @State private var selectedDate = Date()
@@ -869,6 +870,7 @@ struct MonthCalendarView: View {
 struct ScheduleListView: View {
     let schedules: [Schedule]
     let onScheduleSelected: (Schedule) -> Void
+    @Environment(\.modelContext) private var modelContext
 
     @State private var filterType: Schedule.EventType?
 
@@ -908,34 +910,41 @@ struct ScheduleListView: View {
             .padding(.vertical, 12)
             .background(Color(.systemBackground))
 
-            ScrollView {
-                LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
-                    ForEach(groupedSchedules, id: \.0) { month, monthSchedules in
-                        Section {
-                            VStack(spacing: 8) {
-                                ForEach(monthSchedules) { schedule in
-                                    CompactScheduleCard(schedule: schedule)
-                                        .onTapGesture {
-                                            onScheduleSelected(schedule)
-                                        }
+            List {
+                ForEach(groupedSchedules, id: \.0) { month, monthSchedules in
+                    Section {
+                        ForEach(monthSchedules) { schedule in
+                            CompactScheduleCard(schedule: schedule)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                .onTapGesture {
+                                    onScheduleSelected(schedule)
                                 }
-                            }
-                            .padding(.horizontal)
-                        } header: {
-                            HStack {
-                                Text(month)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color(.systemBackground).opacity(0.95))
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        deleteSchedule(schedule)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+
+                                    Button {
+                                        onScheduleSelected(schedule)
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(Color("BasketballOrange"))
+                                }
                         }
+                    } header: {
+                        Text(month)
+                            .font(.headline)
+                            .foregroundColor(.primary)
                     }
                 }
-                .padding(.vertical)
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
             .background(Color(.systemGroupedBackground))
         }
     }
@@ -947,6 +956,15 @@ struct ScheduleListView: View {
         case .tournament: return .orange
         case .scrimmage: return .purple
         case .teamEvent: return .pink
+        }
+    }
+
+    private func deleteSchedule(_ schedule: Schedule) {
+        modelContext.delete(schedule)
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error deleting schedule: \(error)")
         }
     }
 }

@@ -122,25 +122,24 @@ struct VenueDetailSection: View {
 struct MapPreviewCard: View {
     let coordinate: CLLocationCoordinate2D
     let venueName: String
-    @State private var region: MKCoordinateRegion
+    @State private var position: MapCameraPosition
 
     init(coordinate: CLLocationCoordinate2D, venueName: String) {
         self.coordinate = coordinate
         self.venueName = venueName
-        self._region = State(initialValue: MKCoordinateRegion(
-            center: coordinate,
-            latitudinalMeters: 1000,
-            longitudinalMeters: 1000
+        self._position = State(initialValue: MapCameraPosition.region(
+            MKCoordinateRegion(
+                center: coordinate,
+                latitudinalMeters: 1000,
+                longitudinalMeters: 1000
+            )
         ))
     }
 
     var body: some View {
-        Map(coordinateRegion: $region, annotationItems: [MapPin(coordinate: coordinate)]) { pin in
-            MapAnnotation(coordinate: pin.coordinate) {
-                Image(systemName: "mappin.circle.fill")
-                    .foregroundColor(Color("BasketballOrange"))
-                    .font(.title)
-            }
+        Map(position: $position) {
+            Marker(venueName, coordinate: coordinate)
+                .tint(Color("BasketballOrange"))
         }
         .disabled(true)
         .overlay(
@@ -163,23 +162,25 @@ struct MapPreviewCard: View {
 struct FullMapView: View {
     let coordinate: CLLocationCoordinate2D
     let venueName: String
-    @State private var region: MKCoordinateRegion
+    @State private var position: MapCameraPosition
     @Environment(\.dismiss) private var dismiss
 
     init(coordinate: CLLocationCoordinate2D, venueName: String) {
         self.coordinate = coordinate
         self.venueName = venueName
-        self._region = State(initialValue: MKCoordinateRegion(
-            center: coordinate,
-            latitudinalMeters: 2000,
-            longitudinalMeters: 2000
+        self._position = State(initialValue: MapCameraPosition.region(
+            MKCoordinateRegion(
+                center: coordinate,
+                latitudinalMeters: 2000,
+                longitudinalMeters: 2000
+            )
         ))
     }
 
     var body: some View {
         NavigationStack {
-            Map(coordinateRegion: $region, annotationItems: [MapPin(coordinate: coordinate)]) { pin in
-                MapAnnotation(coordinate: pin.coordinate) {
+            Map(position: $position) {
+                Annotation(venueName, coordinate: coordinate) {
                     VStack {
                         Image(systemName: "mappin.circle.fill")
                             .foregroundColor(Color("BasketballOrange"))
@@ -206,7 +207,3 @@ struct FullMapView: View {
     }
 }
 
-struct MapPin: Identifiable {
-    let id = UUID()
-    let coordinate: CLLocationCoordinate2D
-}
