@@ -17,6 +17,7 @@ struct HomeView: View {
     @State private var selectedAIAction: AIQuickAction?
     @State private var showingAIAssistantCoach = false
     @State private var showingAddSchedule = false
+    @State private var showingTeamCode = false
 
     var currentTeam: Team? {
         teams.first
@@ -41,12 +42,7 @@ struct HomeView: View {
                     // Welcome Header
                     welcomeSection
 
-                    // Team Code - Prominent display for demo
-                    if let team = currentTeam {
-                        TeamCodeCard(team: team)
-                    }
-
-                    // AI Quick Actions integrated seamlessly
+                    // AI Quick Actions integrated seamlessly (Team Code button added here)
                     aiQuickActionsSection
 
                     // Team Overview Stats - Removed per user request
@@ -89,6 +85,11 @@ struct HomeView: View {
             .sheet(isPresented: $showingAddSchedule) {
                 if let team = currentTeam {
                     AddScheduleView(team: team)
+                }
+            }
+            .sheet(isPresented: $showingTeamCode) {
+                if let team = currentTeam {
+                    TeamCodeDetailView(team: team)
                 }
             }
         }
@@ -148,14 +149,13 @@ struct HomeView: View {
                     showingNotificationComposer = true
                 }
 
-                // Draft Message (top-right)
+                // Team Code (top-right)
                 HomeCoachActionButton(
-                    icon: "message.fill",
-                    title: "Draft Message",
+                    icon: "qrcode",
+                    title: "Team Code",
                     color: .green
                 ) {
-                    selectedAIAction = .draftMessage
-                    showingAIChat = true
+                    showingTeamCode = true
                 }
 
                 // AI Assistant Coach (bottom-left)
