@@ -21,7 +21,7 @@ struct TeamRosterListView: View {
                     TeamListView(teams: teams, selectedTeam: $selectedTeam)
                 }
             }
-            .navigationTitle("Team Roster")
+            .navigationTitle("Teams")
             .navigationDestination(item: $selectedTeam) { team in
                 TeamRosterDetailView(team: team)
             }
