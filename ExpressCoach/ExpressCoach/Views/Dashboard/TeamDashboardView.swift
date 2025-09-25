@@ -142,37 +142,90 @@ struct TeamDetailDashboard: View {
     @Binding var showingNotificationComposer: Bool
     @Query private var upcomingSchedules: [Schedule]
     @State private var showingPracticeActions = false
+    @State private var greeting: String = ""
+    
+    var nextEvent: Schedule? {
+        upcomingSchedules
+            .filter { $0.date > Date() }
+            .sorted(by: { $0.date < $1.date })
+            .first
+    }
+    
+    var timeOfDayGreeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<12:
+            return "Good morning"
+        case 12..<17:
+            return "Good afternoon"
+        default:
+            return "Good evening"
+        }
+    }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // Team overview card
-                TeamCard(team: team)
-                    .id("team-card")
-
-                // COMMUNICATION HUB - PRIMARY FOCUS
-                // Recent Messages is the centerpiece of the dashboard
-                RecentMessagesCard(team: team)
-                    .id("recent-messages")
-                    .shadow(color: Color("BasketballOrange").opacity(0.1), radius: 8, x: 0, y: 2)
-
-                // This week's upcoming events
-                ThisWeekEventsCard(schedules: upcomingSchedules)
-                    .id("this-week")
-
-                // Quick actions for coaches (secondary)
-                CoachQuickActions(
+            VStack(alignment: .leading, spacing: 20) {
+                // Welcome Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("\(timeOfDayGreeting), Coach")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Text("Managing \(team.name)")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                
+                // Hero Card - Next Event or Team Status
+                if let nextEvent = nextEvent {
+                    NextEventHeroCard(event: nextEvent, team: team)
+                        .padding(.horizontal)
+                } else {
+                    TeamStatusHeroCard(team: team)
+                        .padding(.horizontal)
+                }
+                
+                // Quick Actions Grid - More prominent
+                DashboardQuickActionsGrid(
                     team: team,
                     showingNotificationComposer: $showingNotificationComposer,
                     showingPracticeActions: $showingPracticeActions
                 )
-                .id("quick-actions")
-
-                // Season overview stats
-                QuickStatsCard(team: team)
-                    .id("stats")
+                .padding(.horizontal)
+                
+                // Communication Section
+                VStack(spacing: 16) {
+                    SectionHeader(title: "Communication", icon: "message.fill")
+                        .padding(.horizontal)
+                    
+                    RecentMessagesCard(team: team)
+                        .padding(.horizontal)
+                }
+                
+                // Schedule & Team Section
+                VStack(spacing: 16) {
+                    SectionHeader(title: "Schedule & Team", icon: "calendar")
+                        .padding(.horizontal)
+                    
+                    HStack(spacing: 12) {
+                        // Upcoming Events Mini Card
+                        UpcomingEventsMiniCard(schedules: upcomingSchedules)
+                        
+                        // Team Stats Mini Card
+                        TeamStatsMiniCard(team: team)
+                    }
+                    .padding(.horizontal)
+                }
+                
+                // Team Overview Card
+                TeamCard(team: team)
+                    .padding(.horizontal)
+                    .padding(.bottom, 20)
             }
-            .padding()
         }
         .background(Color("BackgroundDark"))
         .actionSheet(isPresented: $showingPracticeActions) {
@@ -196,109 +249,251 @@ struct TeamDetailDashboard: View {
     }
 }
 
-// Coach quick actions card
-struct CoachQuickActions: View {
+// New Quick Actions Grid - More prominent and modern
+struct DashboardQuickActionsGrid: View {
     let team: Team
     @Binding var showingNotificationComposer: Bool
     @Binding var showingPracticeActions: Bool
+    @State private var pressedButton: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                        .foregroundColor(.gray)
-                    Text("Quick Actions")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.gray)
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                DashboardQuickActionCard(
+                    title: "Send Message",
+                    icon: "paperplane.fill",
+                    gradient: [Color("BasketballOrange"), Color("BasketballOrange").opacity(0.8)],
+                    isPressed: pressedButton == "message"
+                ) {
+                    pressedButton = "message"
+                    showingNotificationComposer = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        pressedButton = nil
+                    }
                 }
-
-                Spacer()
-
-                Text(team.coachRole.displayName)
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(4)
+                
+                DashboardQuickActionCard(
+                    title: "Quick Alert",
+                    icon: "bell.badge",
+                    gradient: [Color.red, Color.red.opacity(0.8)],
+                    isPressed: pressedButton == "alert"
+                ) {
+                    pressedButton = "alert"
+                    showingNotificationComposer = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        pressedButton = nil
+                    }
+                }
             }
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                CoachActionButton(
-                    title: "Message Team",
-                    icon: "message.fill",
-                    color: Color("BasketballOrange"),
-                    action: { showingNotificationComposer = true }
-                )
-
-                CoachActionButton(
-                    title: "Send Alert",
-                    icon: "bell.badge.fill",
-                    color: Color.red,
-                    action: { showingNotificationComposer = true }
-                )
-
-                CoachActionButton(
-                    title: "Practice Update",
-                    icon: "figure.basketball",
-                    color: Color("CourtGreen"),
-                    action: { showingPracticeActions = true }
-                )
-
-                CoachActionButton(
+            
+            HStack(spacing: 12) {
+                DashboardQuickActionCard(
                     title: "Add Event",
                     icon: "calendar.badge.plus",
-                    color: Color.purple,
-                    action: {
-                        // TODO: Navigate to add schedule
+                    gradient: [Color("CourtGreen"), Color("CourtGreen").opacity(0.8)],
+                    isPressed: pressedButton == "event"
+                ) {
+                    pressedButton = "event"
+                    // TODO: Navigate to add schedule
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        pressedButton = nil
                     }
+                }
+                
+                DashboardQuickActionCard(
+                    title: "Take Attendance",
+                    icon: "checkmark.square",
+                    gradient: [Color.purple, Color.purple.opacity(0.8)],
+                    isPressed: pressedButton == "attendance"
+                ) {
+                    pressedButton = "attendance"
+                    // TODO: Navigate to attendance
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        pressedButton = nil
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct DashboardQuickActionCard: View {
+    let title: String
+    let icon: String
+    let gradient: [Color]
+    let isPressed: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundColor(.white)
+                
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                
+                Spacer()
+            }
+            .padding(16)
+            .background(
+                LinearGradient(
+                    colors: gradient,
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
+            )
+            .cornerRadius(12)
+            .scaleEffect(isPressed ? 0.95 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// New Hero Cards
+struct NextEventHeroCard: View {
+    let event: Schedule
+    let team: Team
+    
+    var timeUntilEvent: String {
+        let interval = event.date.timeIntervalSince(Date())
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        
+        if hours > 24 {
+            let days = hours / 24
+            return "in \(days) day\(days == 1 ? "" : "s")"
+        } else if hours > 0 {
+            return "in \(hours)h \(minutes)m"
+        } else {
+            return "in \(minutes) minutes"
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("NEXT UP")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color("BasketballOrange"))
+                    
+                    Text(event.eventType.rawValue)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Text(timeUntilEvent)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                Image(systemName: event.eventType == .game ? "sportscourt.fill" : "figure.basketball")
+                    .font(.system(size: 40))
+                    .foregroundColor(Color("BasketballOrange").opacity(0.3))
+            }
+            
+            HStack(spacing: 16) {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                        .font(.caption)
+                    Text(event.date.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                }
+                .foregroundColor(.gray)
+                
+                HStack(spacing: 6) {
+                    Image(systemName: "location")
+                        .font(.caption)
+                    Text(event.location)
+                        .font(.caption)
+                        .lineLimit(1)
+                }
+                .foregroundColor(.gray)
             }
         }
         .padding()
-        .background(Color("BackgroundDark"))
+        .background(
+            LinearGradient(
+                colors: [Color("CoachBlack"), Color("BackgroundDark")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                .stroke(Color("BasketballOrange").opacity(0.3), lineWidth: 1)
         )
         .cornerRadius(12)
     }
 }
 
-struct CoachActionButton: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let action: () -> Void
-
+struct TeamStatusHeroCard: View {
+    let team: Team
+    
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.2))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: icon)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("TEAM STATUS")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color("CourtGreen"))
+                    
+                    Text(team.name)
                         .font(.title3)
-                        .foregroundColor(color)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Text("\(team.players?.count ?? 0) players • \(team.seasonRecord ?? "0-0") record")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
                 }
-
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                
+                Spacer()
+                
+                VStack(spacing: 4) {
+                    Text("CODE")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                    
+                    Text(team.teamCode)
+                        .font(.system(.title2, design: .monospaced))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("BasketballOrange"))
+                }
             }
-            .frame(height: 80)
-            .frame(maxWidth: .infinity)
-            .background(Color("CoachBlack"))
-            .cornerRadius(8)
+            
+            HStack(spacing: 20) {
+                Label("All players active", systemImage: "checkmark.circle.fill")
+                    .font(.caption)
+                    .foregroundColor(Color("CourtGreen"))
+                
+                Label("Schedule updated", systemImage: "calendar.circle.fill")
+                    .font(.caption)
+                    .foregroundColor(Color("CourtGreen"))
+            }
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding()
+        .background(
+            LinearGradient(
+                colors: [Color("CoachBlack"), Color("BackgroundDark")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color("CourtGreen").opacity(0.3), lineWidth: 1)
+        )
+        .cornerRadius(12)
     }
 }
 
@@ -356,55 +551,156 @@ struct StatItem: View {
     }
 }
 
-struct ThisWeekEventsCard: View {
+// New Mini Cards for better layout
+struct UpcomingEventsMiniCard: View {
     let schedules: [Schedule]
-
+    
+    var upcomingEvents: [Schedule] {
+        schedules
+            .filter { $0.date > Date() }
+            .sorted(by: { $0.date < $1.date })
+            .prefix(2)
+            .map { $0 }
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
-                HStack(spacing: 8) {
-                    Image(systemName: "calendar")
-                        .foregroundColor(Color("BasketballOrange"))
-                    Text("This Week")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                }
+                Image(systemName: "calendar")
+                    .font(.caption)
+                    .foregroundColor(Color("BasketballOrange"))
+                Text("Upcoming")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
                 Spacer()
                 NavigationLink(destination: ScheduleView()) {
-                    Text("Full Schedule")
+                    Image(systemName: "arrow.right")
                         .font(.caption)
                         .foregroundColor(Color("BasketballOrange"))
                 }
             }
-
-            if schedules.isEmpty {
-                VStack(spacing: 8) {
+            
+            if upcomingEvents.isEmpty {
+                VStack(spacing: 4) {
                     Image(systemName: "calendar.badge.minus")
-                        .font(.title2)
                         .foregroundColor(.gray)
-
-                    Text("No events this week")
-                        .font(.subheadline)
+                    Text("No upcoming events")
+                        .font(.caption2)
                         .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical)
+                .frame(height: 60)
             } else {
-                VStack(spacing: 8) {
-                    ForEach(schedules.prefix(3)) { schedule in
-                        CompactScheduleCard(schedule: schedule)
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(upcomingEvents) { event in
+                        HStack {
+                            Circle()
+                                .fill(event.eventType == .game ? Color("BasketballOrange") : Color("CourtGreen"))
+                                .frame(width: 4, height: 4)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(event.eventType.rawValue)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                
+                                Text(event.date.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                            Spacer()
+                        }
                     }
                 }
             }
         }
         .padding()
-        .background(Color("BackgroundDark"))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-        )
+        .frame(maxWidth: .infinity)
+        .background(Color("CoachBlack"))
         .cornerRadius(12)
+    }
+}
+
+struct TeamStatsMiniCard: View {
+    let team: Team
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "chart.bar")
+                    .font(.caption)
+                    .foregroundColor(Color("CourtGreen"))
+                Text("Team Stats")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                Spacer()
+                NavigationLink(destination: TeamRosterListView()) {
+                    Image(systemName: "arrow.right")
+                        .font(.caption)
+                        .foregroundColor(Color("CourtGreen"))
+                }
+            }
+            
+            VStack(spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(team.players?.count ?? 0)")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color("CourtGreen"))
+                        Text("Players")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(team.seasonRecord ?? "0-0")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color("BasketballOrange"))
+                        Text("Record")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                HStack {
+                    Label("100% Active", systemImage: "checkmark.circle")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                    Spacer()
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color("CoachBlack"))
+        .cornerRadius(12)
+    }
+}
+
+struct SectionHeader: View {
+    let title: String
+    let icon: String
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundColor(Color("BasketballOrange"))
+            
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            Spacer()
+        }
     }
 }
 
