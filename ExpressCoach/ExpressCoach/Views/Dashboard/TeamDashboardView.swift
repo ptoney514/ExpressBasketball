@@ -24,30 +24,18 @@ struct TeamDashboardView: View {
                     if teams.isEmpty {
                         EmptyTeamView(showingCreateTeam: $showingCreateTeam)
                     } else if let team = selectedTeam ?? teams.first {
-                        TeamDetailDashboard(team: team, showingNotificationComposer: $showingNotificationComposer)
+                        TeamDetailDashboard(
+                            team: team,
+                            teams: teams,
+                            showingNotificationComposer: $showingNotificationComposer,
+                            selectedTeam: $selectedTeam
+                        )
                     }
                 }
             }
-            .navigationTitle("Express Coach")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .preferredColorScheme(.dark)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {
-                        if !teams.isEmpty {
-                            Button(action: { showingNotificationComposer = true }) {
-                                Image(systemName: "bell.badge")
-                                    .foregroundColor(Color("BasketballOrange"))
-                            }
-                        }
-
-                        Button(action: { showingCreateTeam = true }) {
-                            Image(systemName: "plus")
-                                .foregroundColor(Color("BasketballOrange"))
-                        }
-                    }
-                }
-            }
             .sheet(isPresented: $showingCreateTeam) {
                 CreateTeamView()
             }
@@ -139,10 +127,14 @@ struct FeatureRow: View {
 
 struct TeamDetailDashboard: View {
     let team: Team
+    let teams: [Team]
     @Binding var showingNotificationComposer: Bool
+    @Binding var selectedTeam: Team?
     @Query private var upcomingSchedules: [Schedule]
     @State private var showingPracticeActions = false
     @State private var greeting: String = ""
+    @State private var scrollOffset: CGFloat = 0
+    @State private var headerHeight: CGFloat = 100  // Track header height for proper spacing
     
     var nextEvent: Schedule? {
         upcomingSchedules
@@ -164,70 +156,74 @@ struct TeamDetailDashboard: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Welcome Header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\(timeOfDayGreeting), Coach")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+        ZStack(alignment: .top) {
+            // Main content with scroll detection
+            ScrollViewWithOffset(offset: $scrollOffset) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Spacer for sticky header
+                    Color.clear
+                        .frame(height: headerHeight)
                     
-                    Text("Managing \(team.name)")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                    // Hero Card - Next Event or Team Status
+                    if let nextEvent = nextEvent {
+                        NextEventHeroCard(event: nextEvent, team: team)
+                            .padding(.horizontal)
+                    } else {
+                        TeamStatusHeroCard(team: team)
+                            .padding(.horizontal)
+                    }
                 
-                // Hero Card - Next Event or Team Status
-                if let nextEvent = nextEvent {
-                    NextEventHeroCard(event: nextEvent, team: team)
-                        .padding(.horizontal)
-                } else {
-                    TeamStatusHeroCard(team: team)
-                        .padding(.horizontal)
-                }
-                
-                // Quick Actions Grid - More prominent
-                DashboardQuickActionsGrid(
-                    team: team,
-                    showingNotificationComposer: $showingNotificationComposer,
-                    showingPracticeActions: $showingPracticeActions
-                )
-                .padding(.horizontal)
-                
-                // Communication Section
-                VStack(spacing: 16) {
-                    SectionHeader(title: "Communication", icon: "message.fill")
-                        .padding(.horizontal)
-                    
-                    RecentMessagesCard(team: team)
-                        .padding(.horizontal)
-                }
-                
-                // Schedule & Team Section
-                VStack(spacing: 16) {
-                    SectionHeader(title: "Schedule & Team", icon: "calendar")
-                        .padding(.horizontal)
-                    
-                    HStack(spacing: 12) {
-                        // Upcoming Events Mini Card
-                        UpcomingEventsMiniCard(schedules: upcomingSchedules)
+                // Quick Actions Section
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("Quick Actions")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
                         
-                        // Team Stats Mini Card
-                        TeamStatsMiniCard(team: team)
+                        Spacer()
+                        
+                        Button(action: {}) {
+                            Text("See all")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
                     }
                     .padding(.horizontal)
+                    
+                    DashboardQuickActionsGrid(
+                        team: team,
+                        showingNotificationComposer: $showingNotificationComposer,
+                        showingPracticeActions: $showingPracticeActions
+                    )
+                    .padding(.horizontal)
                 }
                 
-                // Team Overview Card
-                TeamCard(team: team)
-                    .padding(.horizontal)
-                    .padding(.bottom, 20)
+                    // Communication Section
+                    VStack(spacing: 16) {
+                        SectionHeader(title: "Communication", icon: "message.fill")
+                            .padding(.horizontal)
+                        
+                        RecentMessagesCard(team: team)
+                            .padding(.horizontal)
+                    }
+                    
+                    // Teams List Section
+                    TeamsListView(teams: teams, selectedTeam: $selectedTeam)
+                        .padding(.horizontal)
+                        .padding(.bottom, 20)
+                }
             }
+            .background(Color("BackgroundDark"))
+            
+            // Sticky Header Overlay
+            StickyProfileHeader(
+                team: team,
+                timeOfDayGreeting: timeOfDayGreeting,
+                scrollOffset: scrollOffset,
+                height: $headerHeight
+            )
         }
-        .background(Color("BackgroundDark"))
         .actionSheet(isPresented: $showingPracticeActions) {
             ActionSheet(
                 title: Text("Practice Actions"),
@@ -249,105 +245,127 @@ struct TeamDetailDashboard: View {
     }
 }
 
-// New Quick Actions Grid - More prominent and modern
+// Uber-style compact quick actions
 struct DashboardQuickActionsGrid: View {
     let team: Team
     @Binding var showingNotificationComposer: Bool
     @Binding var showingPracticeActions: Bool
     @State private var pressedButton: String? = nil
+    @State private var showingAIAssistant = false
+    @State private var showingChatView = false
+    @State private var showingTeamsView = false
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                DashboardQuickActionCard(
-                    title: "Send Message",
-                    icon: "paperplane.fill",
-                    gradient: [Color("BasketballOrange"), Color("BasketballOrange").opacity(0.8)],
-                    isPressed: pressedButton == "message"
-                ) {
-                    pressedButton = "message"
-                    showingNotificationComposer = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        pressedButton = nil
-                    }
-                }
-                
-                DashboardQuickActionCard(
-                    title: "Quick Alert",
-                    icon: "bell.badge",
-                    gradient: [Color.red, Color.red.opacity(0.8)],
-                    isPressed: pressedButton == "alert"
-                ) {
-                    pressedButton = "alert"
-                    showingNotificationComposer = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        pressedButton = nil
-                    }
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
+            CompactActionButton(
+                title: "Chat",
+                icon: "message.fill",
+                isPressed: pressedButton == "chat"
+            ) {
+                pressedButton = "chat"
+                showingChatView = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    pressedButton = nil
                 }
             }
             
-            HStack(spacing: 12) {
-                DashboardQuickActionCard(
-                    title: "Add Event",
-                    icon: "calendar.badge.plus",
-                    gradient: [Color("CourtGreen"), Color("CourtGreen").opacity(0.8)],
-                    isPressed: pressedButton == "event"
-                ) {
-                    pressedButton = "event"
-                    // TODO: Navigate to add schedule
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        pressedButton = nil
-                    }
+            CompactActionButton(
+                title: "Schedule",
+                icon: "calendar",
+                isPressed: pressedButton == "schedule"
+            ) {
+                pressedButton = "schedule"
+                // TODO: Navigate to schedule
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    pressedButton = nil
                 }
-                
-                DashboardQuickActionCard(
-                    title: "Take Attendance",
-                    icon: "checkmark.square",
-                    gradient: [Color.purple, Color.purple.opacity(0.8)],
-                    isPressed: pressedButton == "attendance"
-                ) {
-                    pressedButton = "attendance"
-                    // TODO: Navigate to attendance
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        pressedButton = nil
-                    }
+            }
+            
+            CompactActionButton(
+                title: "AI Assistant",
+                icon: "sparkles",
+                isPressed: pressedButton == "ai"
+            ) {
+                pressedButton = "ai"
+                showingAIAssistant = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    pressedButton = nil
                 }
+            }
+            
+            CompactActionButton(
+                title: "Teams",
+                icon: "person.3.fill",
+                isPressed: pressedButton == "teams"
+            ) {
+                pressedButton = "teams"
+                showingTeamsView = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    pressedButton = nil
+                }
+            }
+        }
+        .sheet(isPresented: $showingAIAssistant) {
+            AIAssistantView()
+        }
+        .fullScreenCover(isPresented: $showingChatView) {
+            NavigationStack {
+                ChatView()
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Done") {
+                                showingChatView = false
+                            }
+                            .foregroundColor(Color("BasketballOrange"))
+                        }
+                    }
+            }
+        }
+        .fullScreenCover(isPresented: $showingTeamsView) {
+            NavigationStack {
+                TeamRosterListView()
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Done") {
+                                showingTeamsView = false
+                            }
+                            .foregroundColor(Color("BasketballOrange"))
+                        }
+                    }
             }
         }
     }
 }
 
-struct DashboardQuickActionCard: View {
+// Compact Uber-style action button
+struct CompactActionButton: View {
     let title: String
     let icon: String
-    let gradient: [Color]
     let isPressed: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(.white)
+            VStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.gray.opacity(0.15))
+                        .frame(width: 56, height: 56)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundColor(.white)
+                }
                 
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                
-                Spacer()
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
             }
-            .padding(16)
-            .background(
-                LinearGradient(
-                    colors: gradient,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .cornerRadius(12)
-            .scaleEffect(isPressed ? 0.95 : 1.0)
+            .frame(maxWidth: .infinity)
+            .scaleEffect(isPressed ? 0.92 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
         }
         .buttonStyle(PlainButtonStyle())
@@ -700,6 +718,227 @@ struct SectionHeader: View {
                 .foregroundColor(.white)
             
             Spacer()
+        }
+    }
+}
+
+// Custom ScrollView that tracks offset
+struct ScrollViewWithOffset<Content: View>: View {
+    @Binding var offset: CGFloat
+    let content: Content
+    
+    init(offset: Binding<CGFloat>, @ViewBuilder content: () -> Content) {
+        self._offset = offset
+        self.content = content()
+    }
+    
+    var body: some View {
+        ScrollView {
+            GeometryReader { geometry in
+                Color.clear
+                    .preference(
+                        key: ScrollOffsetPreferenceKey.self,
+                        value: geometry.frame(in: .named("scrollView")).minY
+                    )
+            }
+            .frame(height: 0)
+            
+            content
+        }
+        .coordinateSpace(name: "scrollView")
+        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+            offset = value
+        }
+    }
+}
+
+// Preference Key for scroll offset
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+// Sticky Profile Header with animations
+struct StickyProfileHeader: View {
+    let team: Team
+    let timeOfDayGreeting: String
+    let scrollOffset: CGFloat
+    @Binding var height: CGFloat
+    @State private var showingProfileView = false
+    @State private var showingNotifications = false
+    
+    // Animation calculations
+    private var isCompact: Bool {
+        scrollOffset < -20
+    }
+    
+    private var headerOpacity: Double {
+        // Background becomes more opaque as user scrolls
+        let opacity = min(1.0, max(0.95, 1.0 - (scrollOffset / 200)))
+        return opacity
+    }
+    
+    private var scaleEffect: CGFloat {
+        // Subtle scale animation
+        return isCompact ? 0.95 : 1.0
+    }
+    
+    private var verticalPadding: CGFloat {
+        // Reduce padding when scrolling
+        return isCompact ? 8 : 16
+    }
+    
+    // Extract coach info (same as ProfileHeaderView)
+    private var coachFirstName: String {
+        team.coachName.components(separatedBy: " ").first ?? "Coach"
+    }
+    
+    private var coachInitials: String {
+        let components = team.coachName.components(separatedBy: " ")
+        let firstInitial = components.first?.first?.uppercased() ?? ""
+        let lastInitial = components.count > 1 ? String(components.last?.first?.uppercased() ?? "") : ""
+        return "\(firstInitial)\(lastInitial)"
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 16) {
+                // Profile Avatar
+                Button(action: { showingProfileView = true }) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color("BasketballOrange"),
+                                        Color("BasketballOrange").opacity(0.8)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: isCompact ? 44 : 56, height: isCompact ? 44 : 56)
+                        
+                        Text(coachInitials)
+                            .font(.system(size: isCompact ? 16 : 20, weight: .semibold, design: .rounded))
+                            .foregroundColor(.black)
+                        
+                        // Online indicator (hidden when compact)
+                        if !isCompact {
+                            Circle()
+                                .fill(Color("CourtGreen"))
+                                .frame(width: 14, height: 14)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color("BackgroundDark"), lineWidth: 2)
+                                )
+                                .offset(x: 18, y: 18)
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                }
+                .buttonStyle(ProfileScaleButtonStyle())
+                
+                // Greeting only - no title or team name
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(timeOfDayGreeting), \(coachFirstName)")
+                        .font(isCompact ? .headline : .title2)
+                        .fontWeight(isCompact ? .semibold : .bold)
+                        .foregroundColor(.white)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isCompact)
+                }
+                
+                Spacer()
+                
+                // Quick Actions
+                HStack(spacing: 12) {
+                    // Notifications Button
+                    Button(action: { showingNotifications = true }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.gray.opacity(0.15))
+                                .frame(width: isCompact ? 36 : 40, height: isCompact ? 36 : 40)
+                            
+                            Image(systemName: "bell")
+                                .font(.system(size: isCompact ? 16 : 18, weight: .medium))
+                                .foregroundColor(.white)
+                            
+                            // Notification badge
+                            if true { // Replace with actual notification check
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 10, height: 10)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color("BackgroundDark"), lineWidth: 2)
+                                    )
+                                    .offset(x: 12, y: -12)
+                            }
+                        }
+                    }
+                    .buttonStyle(ProfileScaleButtonStyle())
+                    
+                    // Settings Button
+                    Button(action: { showingProfileView = true }) {
+                        Circle()
+                            .fill(Color.gray.opacity(0.15))
+                            .frame(width: isCompact ? 36 : 40, height: isCompact ? 36 : 40)
+                            .overlay(
+                                Image(systemName: "ellipsis")
+                                    .font(.system(size: isCompact ? 16 : 18, weight: .medium))
+                                    .foregroundColor(.white)
+                            )
+                    }
+                    .buttonStyle(ProfileScaleButtonStyle())
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, verticalPadding)
+            .background(
+                // Blurred background with dynamic opacity
+                ZStack {
+                    Color("BackgroundDark")
+                        .opacity(headerOpacity)
+                    
+                    // Add blur effect for depth
+                    if isCompact {
+                        Rectangle()
+                            .fill(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
+                    }
+                }
+                .ignoresSafeArea(edges: .top)
+            )
+            
+            // Bottom separator line (appears when scrolling)
+            if isCompact {
+                Divider()
+                    .background(Color.gray.opacity(0.3))
+                    .transition(.opacity)
+            }
+        }
+        .scaleEffect(scaleEffect)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isCompact)
+        .animation(.easeInOut(duration: 0.2), value: scrollOffset)
+        .background(
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear {
+                        height = geometry.size.height
+                    }
+                    .onChange(of: isCompact) {
+                        height = geometry.size.height
+                    }
+            }
+        )
+        .fullScreenCover(isPresented: $showingProfileView) {
+            ProfileView()
+        }
+        .sheet(isPresented: $showingNotifications) {
+            NotificationsListView()
         }
     }
 }
