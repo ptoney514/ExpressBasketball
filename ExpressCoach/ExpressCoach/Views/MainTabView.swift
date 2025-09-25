@@ -17,29 +17,35 @@ struct MainTabView: View {
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
-                HomeView()
+                TeamDashboardView()
                     .tabItem {
                         Label("Home", systemImage: "house.fill")
                     }
                     .tag(0)
 
-                TeamRosterListView()
+                ChatView()
                     .tabItem {
-                        Label("Team Roster", systemImage: "person.3.fill")
+                        Label("Chat", systemImage: "message.fill")
                     }
                     .tag(1)
+
+                TeamRosterListView()
+                    .tabItem {
+                        Label("Teams", systemImage: "person.3.fill")
+                    }
+                    .tag(2)
 
                 ScheduleView()
                     .tabItem {
                         Label("Schedule", systemImage: "calendar.circle.fill")
                     }
-                    .tag(2)
+                    .tag(3)
 
                 ProfileView()
                     .tabItem {
                         Label("Profile", systemImage: "person.circle.fill")
                     }
-                    .tag(3)
+                    .tag(4)
             }
             .preferredColorScheme(.dark)
             .accentColor(Color("BasketballOrange"))
@@ -47,28 +53,7 @@ struct MainTabView: View {
                 NotificationComposerView()
             }
 
-            // Demo Mode Indicator
-            if demoDataManager.isDemoMode() {
-                VStack {
-                    HStack {
-                        Spacer()
-                        Label("Demo Mode", systemImage: "play.circle.fill")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(Color("BasketballOrange").opacity(0.9))
-                            )
-                            .padding(.trailing, 16)
-                            .padding(.top, 50)
-                    }
-                    Spacer()
-                }
-                .allowsHitTesting(false)
-            }
+            // Demo Mode Indicator removed for TestFlight
         }
     }
 }
