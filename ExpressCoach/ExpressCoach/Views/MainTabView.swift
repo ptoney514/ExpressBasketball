@@ -46,6 +46,12 @@ struct MainTabView: View {
                         Label("Profile", systemImage: "person.circle.fill")
                     }
                     .tag(4)
+
+                SupabaseTestView()
+                    .tabItem {
+                        Label("Supabase", systemImage: "server.rack")
+                    }
+                    .tag(5)
             }
             .preferredColorScheme(.dark)
             .accentColor(Color("BasketballOrange"))
