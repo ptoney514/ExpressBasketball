@@ -62,9 +62,9 @@ struct ProfileHeaderView: View {
             }
             .buttonStyle(ProfileScaleButtonStyle())
             
-            // Greeting only - no title or team name
+            // Coach full name - no greeting
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(timeOfDayGreeting), \(coachFirstName)")
+                Text(team.coachName)
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)

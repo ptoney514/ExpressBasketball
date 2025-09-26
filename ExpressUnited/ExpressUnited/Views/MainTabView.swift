@@ -12,29 +12,35 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(0)
+
+            ChatView()
+                .tabItem {
+                    Label("Chat", systemImage: "message.fill")
+                }
+                .tag(1)
+
+            TeamsView()
+                .tabItem {
+                    Label("Teams", systemImage: "person.3.fill")
+                }
+                .tag(2)
+
             ScheduleListView()
                 .tabItem {
                     Label("Schedule", systemImage: "calendar")
                 }
-                .tag(0)
-
-            RosterListView()
-                .tabItem {
-                    Label("Roster", systemImage: "person.3")
-                }
-                .tag(1)
-
-            AnnouncementsListView()
-                .tabItem {
-                    Label("News", systemImage: "megaphone")
-                }
-                .tag(2)
-
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
                 .tag(3)
+
+            MoreView()
+                .tabItem {
+                    Label("More", systemImage: "ellipsis.circle.fill")
+                }
+                .tag(4)
         }
     }
 }

@@ -90,11 +90,43 @@ struct SupabaseTestView: View {
                 .select()
                 .execute()
 
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
-            teams = try decoder.decode([TeamData].self, from: response.data)
+            // Debug: Print raw response
+            print("Raw response data: \(String(data: response.data, encoding: .utf8) ?? "Unable to decode")")
 
-            print("Successfully loaded \(teams.count) teams")
+            // Try to decode as array first
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                teams = try decoder.decode([TeamData].self, from: response.data)
+                print("Successfully loaded \(teams.count) teams")
+            } catch let decodingError {
+                print("Decoding error: \(decodingError)")
+
+                // Try to get more details about the error
+                if let decodingError = decodingError as? DecodingError {
+                    switch decodingError {
+                    case .dataCorrupted(let context):
+                        print("Data corrupted: \(context.debugDescription)")
+                        print("Coding path: \(context.codingPath)")
+                    case .keyNotFound(let key, let context):
+                        print("Key not found: \(key)")
+                        print("Context: \(context.debugDescription)")
+                        print("Coding path: \(context.codingPath)")
+                    case .typeMismatch(let type, let context):
+                        print("Type mismatch: \(type)")
+                        print("Context: \(context.debugDescription)")
+                        print("Coding path: \(context.codingPath)")
+                    case .valueNotFound(let type, let context):
+                        print("Value not found: \(type)")
+                        print("Context: \(context.debugDescription)")
+                        print("Coding path: \(context.codingPath)")
+                    @unknown default:
+                        print("Unknown decoding error")
+                    }
+                }
+
+                errorMessage = "Failed to decode teams data: \(decodingError.localizedDescription)"
+            }
         } catch {
             errorMessage = "Failed to load teams: \(error.localizedDescription)"
             print("Error loading teams: \(error)")
@@ -113,7 +145,7 @@ struct SupabaseTestView: View {
                 .execute()
 
             let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            decoder.dateDecodingStrategy = .iso8601
             let players = try decoder.decode([PlayerData].self, from: playersResponse.data)
 
             print("Loaded \(players.count) players for team \(team.name)")
@@ -125,7 +157,6 @@ struct SupabaseTestView: View {
                 .eq("team_id", value: team.id.uuidString)
                 .execute()
 
-            decoder.dateDecodingStrategy = .iso8601
             let schedules = try decoder.decode([ScheduleData].self, from: schedulesResponse.data)
 
             print("Loaded \(schedules.count) schedules for team \(team.name)")
@@ -245,6 +276,20 @@ struct TeamData: Codable, Identifiable {
     let logoUrl: String?
     let createdAt: Date?
     let updatedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case teamCode = "team_code"
+        case organization
+        case ageGroup = "age_group"
+        case season
+        case primaryColor = "primary_color"
+        case secondaryColor = "secondary_color"
+        case logoUrl = "logo_url"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
 }
 
 struct PlayerData: Codable, Identifiable {
@@ -266,6 +311,27 @@ struct PlayerData: Codable, Identifiable {
     let isActive: Bool?
     let createdAt: Date?
     let updatedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case teamId = "team_id"
+        case jerseyNumber = "jersey_number"
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case position
+        case height
+        case weight
+        case dateOfBirth = "date_of_birth"
+        case parentName = "parent_name"
+        case parentEmail = "parent_email"
+        case parentPhone = "parent_phone"
+        case emergencyContact = "emergency_contact"
+        case medicalNotes = "medical_notes"
+        case photoUrl = "photo_url"
+        case isActive = "is_active"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
 }
 
 struct ScheduleData: Codable, Identifiable {
@@ -285,4 +351,23 @@ struct ScheduleData: Codable, Identifiable {
     let opponentScore: Int?
     let createdAt: Date?
     let updatedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case teamId = "team_id"
+        case title
+        case eventType = "event_type"
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case location
+        case address
+        case opponent
+        case isHomeGame = "is_home_game"
+        case notes
+        case result
+        case teamScore = "team_score"
+        case opponentScore = "opponent_score"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
 }
