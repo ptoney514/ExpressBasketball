@@ -130,11 +130,11 @@ struct EditPlayerView: View {
             showBirthDate = true
         }
 
-        parentName = player.parentName
-        parentEmail = player.parentEmail
-        parentPhone = player.parentPhone
-        emergencyContact = player.emergencyContact
-        emergencyPhone = player.emergencyPhone
+        parentName = player.parentName ?? ""
+        parentEmail = player.parentEmail ?? ""
+        parentPhone = player.parentPhone ?? ""
+        emergencyContact = player.emergencyContact ?? ""
+        emergencyPhone = player.emergencyPhone ?? ""
         medicalNotes = player.medicalNotes ?? ""
     }
 

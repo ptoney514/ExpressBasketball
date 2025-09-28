@@ -232,14 +232,16 @@ struct ShareSheet: UIViewControllerRepresentable {
 
 // Preview
 #Preview {
-    let sampleTeam = Team(
-        name: "Express Lightning",
-        ageGroup: "U14",
-        coachName: "Coach Johnson",
-        coachRole: .headCoach
-    )
-
-    return TeamCodeCard(team: sampleTeam)
+    TeamCodeCard(team: {
+        let sampleTeam = Team(
+            name: "Express Lightning",
+            teamCode: "LIGHT1",
+            ageGroup: "U14"
+        )
+        sampleTeam.coachName = "Coach Johnson"
+        sampleTeam.coachRole = .headCoach
+        return sampleTeam
+    }())
         .padding()
         .background(Color.black)
 }

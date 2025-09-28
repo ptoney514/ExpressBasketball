@@ -16,20 +16,31 @@ final class Player {
     var jerseyNumber: String
     var position: String
     var height: String?
+    var weight: String?
     var graduationYear: Int
     var birthDate: Date?
-    var parentName: String
-    var parentEmail: String
-    var parentPhone: String
-    var emergencyContact: String
-    var emergencyPhone: String
+    var dateOfBirth: Date? { birthDate } // Alias for compatibility
+    var parentName: String?
+    var parentEmail: String?
+    var parentPhone: String?
+    var emergencyContact: String?
+    var emergencyPhone: String?
     var medicalNotes: String?
     var photoURL: String?
     var isActive: Bool
     var createdAt: Date
     var updatedAt: Date
+    
+    // Sync tracking
+    var lastSyncedAt: Date?
+    var syncVersion: Int = 1
 
     @Relationship(inverse: \Team.players) var teams: [Team]?
+    
+    // Computed property for single team (backward compatibility)
+    var team: Team? {
+        teams?.first
+    }
 
     init(
         firstName: String,

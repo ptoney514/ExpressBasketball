@@ -8,20 +8,26 @@ class AuthenticationManager: ObservableObject {
     
     @Published var isAuthenticated = false
     @Published var currentUser: User?
+    @Published var currentCoach: Coach?
     @Published var isLoading = true
     @Published var showAuthenticationView = false
     @Published var usesDemoMode = false
     
     private var authStateChangeListener: Task<Void, Never>?
     
-    let supabase = SupabaseClient(
-        supabaseURL: URL(string: "http://127.0.0.1:54321")!,
-        supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
-    )
+    let supabase: SupabaseClient
+    private let config = ConfigurationManager.shared
     
     private init() {
+        self.supabase = SupabaseClient(
+            supabaseURL: config.supabaseURL,
+            supabaseKey: config.supabaseAnonKey
+        )
+        
         checkAuthState()
         listenToAuthStateChanges()
+        
+        config.log("🔐 AuthenticationManager initialized with \(config.environment) environment", level: .debug)
     }
     
     deinit {

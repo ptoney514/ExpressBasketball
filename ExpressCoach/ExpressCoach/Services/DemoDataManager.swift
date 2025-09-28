@@ -52,11 +52,13 @@ class DemoDataManager {
     private func createThunderU12Team() -> Team {
         let team = Team(
             name: "Express Thunder",
+            teamCode: "DEMO01",
+            organization: "Express Basketball",
             ageGroup: "U12 Boys",
-            coachName: "John Smith"
+            season: "2025 Spring"
         )
-
-        team.teamCode = "DEMO01"
+        
+        team.coachName = "John Smith"
 
         team.practiceLocation = "Express Basketball Gym A"
         team.practiceTime = "Tue/Thu 5:00-6:30 PM"
@@ -93,11 +95,13 @@ class DemoDataManager {
     private func createThunderU14Team() -> Team {
         let team = Team(
             name: "Express Lightning",
+            teamCode: "DEMO02",
+            organization: "Express Basketball",
             ageGroup: "U14 Boys",
-            coachName: "Mike Johnson"
+            season: "2025 Spring"
         )
-
-        team.teamCode = "DEMO02"
+        
+        team.coachName = "Mike Johnson"
 
         team.practiceLocation = "Express Basketball Gym B"
         team.practiceTime = "Mon/Wed 6:30-8:00 PM"

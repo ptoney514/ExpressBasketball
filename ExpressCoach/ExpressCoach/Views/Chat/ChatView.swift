@@ -524,7 +524,7 @@ Coach
         // Animate progress
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
             if processingProgress < 1.0 {
-                processingProgress += 0.05
+                processingProgress = min(1.0, processingProgress + 0.05)
             } else {
                 timer.invalidate()
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -845,6 +845,10 @@ struct RecordingAssistantView: View {
 struct ProcessingAssistantView: View {
     let progress: Double
     
+    private var clampedProgress: Double {
+        min(max(0, progress), 1.0)
+    }
+    
     var body: some View {
         VStack(spacing: 32) {
             Spacer()
@@ -855,15 +859,15 @@ struct ProcessingAssistantView: View {
                     Circle()
                         .stroke(Color("BasketballOrange").opacity(0.3), lineWidth: 2)
                         .frame(width: 60 + CGFloat(index * 20), height: 60 + CGFloat(index * 20))
-                        .scaleEffect(1 + progress * 0.5)
-                        .opacity(1 - progress)
+                        .scaleEffect(1 + clampedProgress * 0.5)
+                        .opacity(1 - clampedProgress)
                 }
                 
                 Image(systemName: "brain")
                     .font(.system(size: 40))
                     .foregroundColor(Color("BasketballOrange"))
-                    .scaleEffect(1.0 + progress * 0.2)
-                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: progress)
+                    .scaleEffect(1.0 + clampedProgress * 0.2)
+                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: clampedProgress)
             }
             
             VStack(spacing: 8) {
@@ -879,7 +883,7 @@ struct ProcessingAssistantView: View {
             }
             
             // Progress bar
-            ProgressView(value: progress)
+            ProgressView(value: clampedProgress)
                 .progressViewStyle(LinearProgressViewStyle(tint: Color("BasketballOrange")))
                 .frame(width: 200)
             

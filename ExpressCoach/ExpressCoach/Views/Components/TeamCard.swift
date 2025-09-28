@@ -106,17 +106,19 @@ struct StatColumn: View {
 }
 
 #Preview {
-    let sampleTeam = Team(
-        name: "Lakers U14",
-        ageGroup: "Under 14",
-        coachName: "Coach Johnson",
-        coachRole: .headCoach
-    )
-    sampleTeam.practiceLocation = "Gym A"
-    sampleTeam.practiceTime = "Mon/Wed 6:00 PM"
-    sampleTeam.seasonRecord = "8-2"
-
-    return TeamCard(team: sampleTeam)
+    TeamCard(team: {
+        let sampleTeam = Team(
+            name: "Lakers U14",
+            teamCode: "LAKER1",
+            ageGroup: "Under 14"
+        )
+        sampleTeam.coachName = "Coach Johnson"
+        sampleTeam.coachRole = .headCoach
+        sampleTeam.practiceLocation = "Gym A"
+        sampleTeam.practiceTime = "Mon/Wed 6:00 PM"
+        sampleTeam.seasonRecord = "8-2"
+        return sampleTeam
+    }())
         .preferredColorScheme(.dark)
         .padding()
 }

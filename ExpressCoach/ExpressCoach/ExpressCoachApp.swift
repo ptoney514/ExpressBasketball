@@ -12,6 +12,8 @@ import Supabase
 @main
 struct ExpressCoachApp: App {
     @StateObject private var authManager = AuthenticationManager.shared
+    @StateObject private var syncService = SupabaseSyncService.shared
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Team.self,
@@ -25,7 +27,8 @@ struct ExpressCoachApp: App {
             Venue.self,
             Hotel.self,
             Airport.self,
-            ParkingOption.self
+            ParkingOption.self,
+            Coach.self // Added Coach model
         ])
 
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -54,10 +57,28 @@ struct ExpressCoachApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(authManager)
+                .environmentObject(syncService)
                 .onOpenURL { url in
                     Task {
                         await authManager.handleDeepLink(url: url)
                     }
+                }
+                .onAppear {
+                    // Configure sync service with model context
+                    if let modelContext = sharedModelContainer.mainContext as? ModelContext {
+                        syncService.configure(with: modelContext)
+                        
+                        // Start syncing if authenticated
+                        if authManager.isAuthenticated {
+                            Task {
+                                await syncService.performFullSync()
+                                syncService.subscribeToRealtimeUpdates()
+                            }
+                        }
+                    }
+                    
+                    // Load environment variables if available
+                    EnvironmentFileLoader.loadIfExists()
                 }
         }
         .modelContainer(sharedModelContainer)
