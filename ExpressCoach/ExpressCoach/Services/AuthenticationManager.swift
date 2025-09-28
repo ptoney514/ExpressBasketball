@@ -59,7 +59,7 @@ class AuthenticationManager: ObservableObject {
     
     private func listenToAuthStateChanges() {
         authStateChangeListener = Task {
-            for await (event, session) in await supabase.auth.authStateChanges {
+            for await (event, session) in supabase.auth.authStateChanges {
                 await MainActor.run {
                     switch event {
                     case .signedIn:

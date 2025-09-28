@@ -243,7 +243,7 @@ struct TeamCodeEntryView: View {
         
         // Check if team with this code exists
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { // Simulate network delay
-            if let team = teams.first(where: { $0.teamCode == code }) {
+            if teams.contains(where: { $0.teamCode == code }) {
                 showSuccess = true
                 isValidating = false
             } else if code == "DEMO01" || code == "TEST01" {

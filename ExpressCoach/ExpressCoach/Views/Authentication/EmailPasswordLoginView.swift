@@ -257,7 +257,7 @@ struct EmailPasswordLoginView: View {
                     )
                 } else {
                     // Sign in
-                    try await supabase.auth.signInWithPassword(
+                    try await supabase.auth.signIn(
                         email: email,
                         password: password
                     )
