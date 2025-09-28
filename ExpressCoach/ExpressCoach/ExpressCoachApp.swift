@@ -7,9 +7,11 @@
 
 import SwiftUI
 import SwiftData
+import Supabase
 
 @main
 struct ExpressCoachApp: App {
+    @StateObject private var authManager = AuthenticationManager.shared
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Team.self,
@@ -51,6 +53,12 @@ struct ExpressCoachApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(authManager)
+                .onOpenURL { url in
+                    Task {
+                        await authManager.handleDeepLink(url: url)
+                    }
+                }
         }
         .modelContainer(sharedModelContainer)
     }
@@ -59,15 +67,33 @@ struct ExpressCoachApp: App {
 struct ContentView: View {
     @Query private var teams: [Team]
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var authManager: AuthenticationManager
     @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     @State private var isLoadingDemoData = false
     @State private var loadError: String?
+    @State private var showAuthenticationView = false
 
     private let demoDataManager = DemoDataManager.shared
 
     var body: some View {
         Group {
-            if let error = loadError {
+            if authManager.isLoading {
+                // Loading state
+                ZStack {
+                    Color("BackgroundDark")
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color("BasketballOrange")))
+                            .scaleEffect(1.5)
+                        
+                        Text("Loading...")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                }
+            } else if let error = loadError {
                 // Error state
                 ZStack {
                     Color("BackgroundDark")
@@ -105,8 +131,12 @@ struct ContentView: View {
                         }
                     }
                 }
-            } else if !hasCompletedOnboarding && teams.isEmpty {
-                // First launch - show onboarding
+            } else if !authManager.isAuthenticated && !authManager.usesDemoMode {
+                // Show authentication options
+                AuthenticationView()
+                    .environmentObject(authManager)
+            } else if !hasCompletedOnboarding && teams.isEmpty && authManager.usesDemoMode {
+                // First launch with demo mode - show onboarding
                 OnboardingView(onComplete: {
                     // When onboarding completes, set up demo data
                     UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
