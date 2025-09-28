@@ -609,12 +609,26 @@ struct IdleAssistantView: View {
     let onPromptSelected: (ExamplePrompt) -> Void
     let onMicrophoneTap: () -> Void
     
+    @Environment(\.dismiss) private var dismiss
     @State private var greetingOpacity = 0.0
     @State private var promptsOpacity = 0.0
     @State private var buttonScale = 0.8
     
     var body: some View {
         VStack(spacing: 32) {
+            // Close button at top
+            HStack {
+                Spacer()
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(.gray)
+                        .background(Circle().fill(Color.black.opacity(0.5)))
+                }
+                .padding(.trailing, 20)
+                .padding(.top, 20)
+            }
+            
             Spacer()
             
             // Assistant greeting
@@ -882,9 +896,24 @@ struct ResultAssistantView: View {
     let onRecordAgain: () -> Void
     let onEdit: () -> Void
     
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Close button at top right
+                HStack {
+                    Spacer()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 30))
+                            .foregroundColor(.gray)
+                            .background(Circle().fill(Color.black.opacity(0.5)))
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                
                 // Success indicator
                 ZStack {
                     Circle()
@@ -896,7 +925,7 @@ struct ResultAssistantView: View {
                         .foregroundColor(Color("CourtGreen"))
                         // .symbolEffect(.bounce) // iOS 18+ only
                 }
-                .padding(.top, 40)
+                .padding(.top, 20)
                 
                 Text("Perfect! Here's your message")
                     .font(.title2)
