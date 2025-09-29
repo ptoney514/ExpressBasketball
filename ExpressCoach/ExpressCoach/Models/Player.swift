@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Player {
+final class Player: @unchecked Sendable {
     var id: UUID
     var firstName: String
     var lastName: String

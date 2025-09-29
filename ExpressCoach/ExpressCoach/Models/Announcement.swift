@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Announcement {
+final class Announcement: @unchecked Sendable {
     var id: UUID
     var title: String
     var content: String
@@ -38,7 +38,7 @@ final class Announcement {
         self.updatedAt = Date()
     }
 
-    enum Priority: String, CaseIterable, Codable {
+    enum Priority: String, CaseIterable, Codable, Sendable {
         case low = "Low"
         case normal = "Normal"
         case high = "High"

@@ -13,8 +13,10 @@ import Supabase
 struct ExpressCoachApp: App {
     @StateObject private var authManager = AuthenticationManager.shared
     @StateObject private var syncService = SupabaseSyncService.shared
+    @State private var containerError: Error?
+    @State private var retryCount = 0
     
-    var sharedModelContainer: ModelContainer = {
+    var sharedModelContainer: ModelContainer? {
         let schema = Schema([
             Team.self,
             Player.self,
@@ -48,16 +50,38 @@ struct ExpressCoachApp: App {
                 try? FileManager.default.removeItem(at: storeURL)
                 return try ModelContainer(for: schema, configurations: [modelConfiguration])
             } catch {
-                fatalError("Could not create ModelContainer after reset: \(error)")
+                // If all else fails, try in-memory container as fallback
+                print("Failed to reset container, trying in-memory fallback: \(error)")
+                containerError = error
+                
+                let memoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                return try? ModelContainer(for: schema, configurations: [memoryConfig])
             }
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authManager)
-                .environmentObject(syncService)
+            if let container = sharedModelContainer {
+                // Normal app flow with container
+                Group {
+                    if containerError != nil {
+                        // Wrap in InMemoryContainerView to show warning
+                        InMemoryContainerView(
+                            content: {
+                                ContentView()
+                                    .environmentObject(authManager)
+                                    .environmentObject(syncService)
+                            },
+                            originalError: containerError
+                        )
+                    } else {
+                        ContentView()
+                            .environmentObject(authManager)
+                            .environmentObject(syncService)
+                    }
+                }
+                .modelContainer(container)
                 .onOpenURL { url in
                     Task {
                         await authManager.handleDeepLink(url: url)
@@ -65,7 +89,7 @@ struct ExpressCoachApp: App {
                 }
                 .onAppear {
                     // Configure sync service with model context
-                    if let modelContext = sharedModelContainer.mainContext as? ModelContext {
+                    if let modelContext = container.mainContext as? ModelContext {
                         syncService.configure(with: modelContext)
                         
                         // Start syncing if authenticated
@@ -80,8 +104,20 @@ struct ExpressCoachApp: App {
                     // Load environment variables if available
                     EnvironmentFileLoader.loadIfExists()
                 }
+            } else {
+                // Show error recovery view if container couldn't be created
+                ErrorRecoveryView(
+                    error: containerError,
+                    retryAction: {
+                        retryCount += 1
+                        // Force a new attempt by clearing caches
+                        UserDefaults.standard.synchronize()
+                        // In a real app, you might want to restart the app
+                        // For now, we'll just update the retry count which will trigger a rebuild
+                    }
+                )
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }
 

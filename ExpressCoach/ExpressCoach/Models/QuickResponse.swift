@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class QuickResponse {
+final class QuickResponse: @unchecked Sendable {
     @Attribute(.unique) var id: UUID
     var title: String
     var template: String

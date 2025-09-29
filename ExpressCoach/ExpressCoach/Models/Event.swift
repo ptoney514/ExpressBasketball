@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Event {
+final class Event: @unchecked Sendable {
     var id: UUID
     var title: String
     var eventDescription: String?

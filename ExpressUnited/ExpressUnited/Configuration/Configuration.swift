@@ -1,6 +1,6 @@
 //
 //  Configuration.swift
-//  ExpressCoach
+//  ExpressUnited
 //
 //  Environment configuration for Supabase and other services
 //
@@ -55,25 +55,11 @@ enum AppEnvironment {
     var deepLinkScheme: String {
         switch self {
         case .development:
-            return "expresscoach-dev"
+            return "expressunited-dev"
         case .staging:
-            return "expresscoach-staging"
+            return "expressunited-staging"
         case .production:
-            return "expresscoach"
-        }
-    }
-    
-    var pushNotificationServerURL: URL? {
-        switch self {
-        case .development:
-            // Local push notification server for testing
-            return URL(string: "http://localhost:3000")
-        case .staging:
-            // TODO: Add your staging push server URL
-            return nil
-        case .production:
-            // TODO: Add your production push server URL
-            return nil
+            return "expressunited"
         }
     }
     
@@ -126,7 +112,7 @@ class ConfigurationManager {
         self.environment = AppEnvironment.current
         
         #if DEBUG
-        print("🚀 ExpressCoach Configuration")
+        print("🏀 ExpressUnited Configuration")
         print("📍 Environment: \(environment)")
         print("🔗 Supabase URL: \(environment.supabaseURL)")
         print("🔑 Deep Link Scheme: \(environment.deepLinkScheme)")
@@ -145,41 +131,6 @@ class ConfigurationManager {
     }
 }
 
-// MARK: - Environment File Loader
-// This allows loading secrets from a .env file that's not checked into git
-struct EnvironmentFileLoader {
-    static func loadIfExists() {
-        #if DEBUG
-        // Only attempt to load .env file in debug builds
-        let fileManager = FileManager.default
-        
-        guard let projectPath = ProcessInfo.processInfo.environment["PROJECT_DIR"] else {
-            return
-        }
-        
-        let envPath = "\(projectPath)/.env.local"
-        
-        guard fileManager.fileExists(atPath: envPath),
-              let envContent = try? String(contentsOfFile: envPath, encoding: .utf8) else {
-            return
-        }
-        
-        // Parse .env file
-        let lines = envContent.components(separatedBy: .newlines)
-        for line in lines {
-            let parts = line.components(separatedBy: "=")
-            if parts.count == 2 {
-                let key = parts[0].trimmingCharacters(in: .whitespaces)
-                let value = parts[1].trimmingCharacters(in: .whitespaces)
-                setenv(key, value, 1)
-            }
-        }
-        
-        print("✅ Loaded environment variables from .env.local")
-        #endif
-    }
-}
-
 // MARK: - Convenience Extensions
 extension ConfigurationManager {
     var supabaseURL: URL {
@@ -192,9 +143,5 @@ extension ConfigurationManager {
     
     var deepLinkURL: URL {
         URL(string: "\(environment.deepLinkScheme)://")!
-    }
-    
-    var magicLinkRedirectURL: URL {
-        URL(string: "\(environment.deepLinkScheme)://login-callback")!
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class AIMessage {
+final class AIMessage: @unchecked Sendable {
     @Attribute(.unique) var id: UUID
     var content: String
     var isFromParent: Bool
@@ -35,7 +35,7 @@ final class AIMessage {
         self.coachEdited = false
     }
 
-    enum Sentiment: String, Codable, CaseIterable {
+    enum Sentiment: String, Codable, CaseIterable, Sendable {
         case positive = "Positive"
         case neutral = "Neutral"
         case negative = "Negative"

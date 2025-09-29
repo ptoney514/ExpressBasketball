@@ -125,10 +125,12 @@ struct DemoDataGenerator {
         if teams?.isEmpty ?? true {
             let team = Team(
                 name: "Express Elite U14",
+                teamCode: "EXP123",
+                organization: "Express Basketball",
                 ageGroup: "U14",
-                coachName: "Coach Johnson"
+                season: "2024-25"
             )
-            team.teamCode = "EXP123"
+            team.coachName = "Coach Johnson"
             modelContext.insert(team)
             try? modelContext.save()
         }

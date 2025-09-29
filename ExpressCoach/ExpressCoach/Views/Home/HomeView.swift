@@ -52,7 +52,17 @@ struct HomeView: View {
                     // }
 
                     // Recent Messages - Primary communication focus (moved above This Week)
-                    RecentMessagesCard(team: currentTeam ?? Team(name: "Express Lightning", ageGroup: "U14", coachName: "Coach", coachRole: .headCoach))
+                    RecentMessagesCard(team: currentTeam ?? {
+                        let defaultTeam = Team(
+                            name: "Express Lightning",
+                            teamCode: "LIGHT01",
+                            organization: "Express Basketball",
+                            ageGroup: "U14",
+                            season: "2024-25"
+                        )
+                        defaultTeam.coachName = "Coach"
+                        return defaultTeam
+                    }())
 
                     // This Week's Events
                     if !upcomingEvents.isEmpty {

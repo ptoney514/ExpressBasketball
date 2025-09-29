@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Team {
+final class Team: @unchecked Sendable {
     var id: UUID
     var teamCode: String
     var name: String
@@ -81,7 +81,7 @@ final class Team {
     }
 }
 
-enum CoachRole: String, CaseIterable, Codable {
+enum CoachRole: String, CaseIterable, Codable, Sendable {
     case headCoach = "Head Coach"
     case assistantCoach = "Assistant Coach"
     case director = "Director"

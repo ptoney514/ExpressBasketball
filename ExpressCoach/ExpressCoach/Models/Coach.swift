@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Coach {
+final class Coach: @unchecked Sendable {
     var id: UUID
     var userId: String // Supabase auth user ID
     var email: String

@@ -35,6 +35,8 @@ enum SyncStatus {
 }
 
 // MARK: - DTO Objects for Supabase Communication
+// NOTE: DTOs are now defined in SupabaseDTO.swift to avoid duplication
+/* Commenting out to use centralized DTOs
 struct TeamDTO: Codable, Sendable {
     let id: String
     let name: String
@@ -124,6 +126,7 @@ struct PlayerDTO: Codable, Sendable {
         self.updatedAt = player.updatedAt.ISO8601Format()
     }
 }
+*/ // End of commented DTOs
 
 // MARK: - Main Sync Service
 class SupabaseSyncService: ObservableObject {
@@ -277,8 +280,9 @@ class SupabaseSyncService: ObservableObject {
     }
     
     private func updateLocalTeam(from dto: TeamDTO) async {
-        guard let modelContext = modelContext,
-              let teamId = UUID(uuidString: dto.id) else { return }
+        guard let modelContext = modelContext else { return }
+        
+        let teamId = dto.id
         
         // Check if team exists locally
         let predicate = #Predicate<Team> { $0.id == teamId }
@@ -288,9 +292,9 @@ class SupabaseSyncService: ObservableObject {
             // Update existing team
             existingTeam.name = dto.name
             existingTeam.teamCode = dto.teamCode
-            existingTeam.organization = dto.organization
-            existingTeam.ageGroup = dto.ageGroup ?? ""
-            existingTeam.season = dto.season
+            existingTeam.organization = dto.organization ?? ""
+            existingTeam.ageGroup = dto.ageGroup
+            existingTeam.season = dto.season ?? ""
             existingTeam.wins = dto.wins
             existingTeam.losses = dto.losses
             existingTeam.isActive = dto.isActive
@@ -301,7 +305,7 @@ class SupabaseSyncService: ObservableObject {
                 name: dto.name,
                 teamCode: dto.teamCode,
                 organization: dto.organization ?? "",
-                ageGroup: dto.ageGroup ?? "",
+                ageGroup: dto.ageGroup,
                 season: dto.season ?? ""
             )
             newTeam.id = teamId
@@ -359,8 +363,8 @@ class SupabaseSyncService: ObservableObject {
     // MARK: - Real-time Subscriptions
     
     func subscribeToRealtimeUpdates() {
-        // Create a realtime channel
-        let channel = supabase.channel("db-changes")
+        // Create a realtime channel using the realtimeV2 API
+        let channel = supabase.realtimeV2.channel("db-changes")
         
         // Note: Realtime subscriptions are handled differently in v2.32.0
         // For now, we'll just store the channel for future use

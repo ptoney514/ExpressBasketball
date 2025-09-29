@@ -24,8 +24,11 @@ class AuthenticationManager: ObservableObject {
             supabaseKey: config.supabaseAnonKey
         )
         
-        checkAuthState()
-        listenToAuthStateChanges()
+        // Start auth state checking asynchronously to avoid blocking
+        Task { @MainActor in
+            await checkAuthState()
+            await listenToAuthStateChanges()
+        }
         
         config.log("🔐 AuthenticationManager initialized with \(config.environment) environment", level: .debug)
     }
@@ -34,36 +37,30 @@ class AuthenticationManager: ObservableObject {
         authStateChangeListener?.cancel()
     }
     
-    private func checkAuthState() {
-        Task {
-            do {
-                // Check if we have a session
-                let session = try await supabase.auth.session
-                await MainActor.run {
-                    self.currentUser = session.user
-                    self.isAuthenticated = true
-                    self.isLoading = false
-                }
-            } catch {
-                // No session - check if using demo mode
-                await MainActor.run {
-                    let isDemoMode = UserDefaults.standard.bool(forKey: "isDemoMode")
-                    let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
-                    
-                    self.usesDemoMode = isDemoMode
-                    self.isAuthenticated = isDemoMode || hasCompletedOnboarding
-                    self.isLoading = false
-                    
-                    // Show auth view if not authenticated and not in demo mode
-                    if !self.isAuthenticated && !isDemoMode {
-                        self.showAuthenticationView = true
-                    }
-                }
+    private func checkAuthState() async {
+        do {
+            // Check if we have a session
+            let session = try await supabase.auth.session
+            self.currentUser = session.user
+            self.isAuthenticated = true
+            self.isLoading = false
+        } catch {
+            // No session - check if using demo mode
+            let isDemoMode = UserDefaults.standard.bool(forKey: "isDemoMode")
+            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+            
+            self.usesDemoMode = isDemoMode
+            self.isAuthenticated = isDemoMode || hasCompletedOnboarding
+            self.isLoading = false
+            
+            // Show auth view if not authenticated and not in demo mode
+            if !self.isAuthenticated && !isDemoMode {
+                self.showAuthenticationView = true
             }
         }
     }
     
-    private func listenToAuthStateChanges() {
+    private func listenToAuthStateChanges() async {
         authStateChangeListener = Task {
             for await (event, session) in supabase.auth.authStateChanges {
                 await MainActor.run {
