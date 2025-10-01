@@ -119,7 +119,7 @@ struct AnnouncementRowView: View {
 
                     Spacer()
 
-                    Text(announcement.createdAt.formatted(.relative(presentation: .abbreviated)))
+                    Text(announcement.createdAt.formatted(.relative(presentation: .named)))
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
