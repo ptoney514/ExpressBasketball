@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MoreView: View {
+    @State private var showingAppTour = false
+
     var body: some View {
         NavigationView {
             List {
@@ -41,6 +43,20 @@ struct MoreView: View {
                         }
                     }
 
+                    Button(action: { showingAppTour = true }) {
+                        HStack {
+                            Image(systemName: "hand.wave.fill")
+                                .foregroundColor(.orange)
+                                .frame(width: 30)
+                            Text("App Tour")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .foregroundColor(.primary)
+
                     HStack {
                         Image(systemName: "questionmark.circle")
                             .foregroundColor(.blue)
@@ -57,6 +73,9 @@ struct MoreView: View {
                 }
             }
             .navigationTitle("More")
+            .fullScreenCover(isPresented: $showingAppTour) {
+                AppTourView()
+            }
         }
     }
 }

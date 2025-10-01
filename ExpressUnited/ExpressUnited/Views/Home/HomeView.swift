@@ -30,21 +30,15 @@ struct HomeView: View {
             .first
     }
 
-    var timeOfDayGreeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 5..<12:
-            return "Good morning"
-        case 12..<17:
-            return "Good afternoon"
-        default:
-            return "Good evening"
-        }
-    }
-
-    var parentName: String {
-        // TODO: Get from user profile
-        "Mike"
+    var upcomingGames: [Schedule] {
+        schedules
+            .filter {
+                $0.startTime > Date() &&
+                ($0.eventType == .game || $0.eventType == .tournament)
+            }
+            .sorted(by: { $0.startTime < $1.startTime })
+            .prefix(3)
+            .map { $0 }
     }
 
     var parentInitials: String {
@@ -77,40 +71,35 @@ struct HomeView: View {
                             .padding(.horizontal)
                     }
 
-                    // Quick Actions Section
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            Text("Quick Actions")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-
-                            Spacer()
-
-                            Text("See all")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.horizontal)
-
-                        QuickActionsGrid(
-                            showingSchedule: $showingSchedule,
-                            showingRoster: $showingRoster,
-                            showingAnnouncements: $showingAnnouncements
-                        )
-                        .padding(.horizontal)
-                    }
-
-                    // Communication Section
+                    // Messages Section (Announcements) - Moved above games for priority
                     if !announcements.isEmpty {
                         VStack(alignment: .leading, spacing: 16) {
-                            SectionHeader(title: "Communication", icon: "message.fill")
+                            SectionHeader(title: "Messages", icon: "message.fill")
                                 .padding(.horizontal)
 
                             RecentAnnouncementsCard(announcements: announcements)
                                 .padding(.horizontal)
                         }
                     }
+
+                    // Upcoming Games/Tournaments Section
+                    if !upcomingGames.isEmpty {
+                        VStack(alignment: .leading, spacing: 16) {
+                            SectionHeader(title: "Upcoming Games", icon: "sportscourt.fill")
+                                .padding(.horizontal)
+
+                            UpcomingGamesCard(games: upcomingGames)
+                                .padding(.horizontal)
+                        }
+                    }
+
+                    // Coach's Corner - Inspirational Quote
+                    CoachsCornerCard()
+                        .padding(.horizontal)
+
+                    // Training Video Section
+                    TrainingVideoCard()
+                        .padding(.horizontal)
 
                     // Week Calendar Preview
                     if !schedules.isEmpty {
@@ -128,9 +117,8 @@ struct HomeView: View {
             }
 
             // Sticky Header
-            StickyParentHeader(
-                greeting: timeOfDayGreeting,
-                parentName: parentName,
+            CleanIOSHeader(
+                title: "Home",
                 parentInitials: parentInitials,
                 scrollOffset: scrollOffset,
                 height: $headerHeight
@@ -176,102 +164,6 @@ struct HomeView: View {
                     }
             }
         }
-    }
-}
-
-// MARK: - Quick Actions Grid
-
-struct QuickActionsGrid: View {
-    @Binding var showingSchedule: Bool
-    @Binding var showingRoster: Bool
-    @Binding var showingAnnouncements: Bool
-
-    @State private var pressedButton: String? = nil
-
-    var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
-            CompactActionButton(
-                title: "Chat",
-                icon: "message.fill",
-                isPressed: pressedButton == "chat"
-            ) {
-                pressedButton = "chat"
-                // TODO: Navigate to chat
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    pressedButton = nil
-                }
-            }
-
-            CompactActionButton(
-                title: "Schedule",
-                icon: "calendar",
-                isPressed: pressedButton == "schedule"
-            ) {
-                pressedButton = "schedule"
-                showingSchedule = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    pressedButton = nil
-                }
-            }
-
-            CompactActionButton(
-                title: "AI Assistant",
-                icon: "sparkles",
-                isPressed: pressedButton == "ai"
-            ) {
-                pressedButton = "ai"
-                // TODO: Navigate to AI assistant
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    pressedButton = nil
-                }
-            }
-
-            CompactActionButton(
-                title: "Teams",
-                icon: "person.3.fill",
-                isPressed: pressedButton == "teams"
-            ) {
-                pressedButton = "teams"
-                showingRoster = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    pressedButton = nil
-                }
-            }
-        }
-    }
-}
-
-struct CompactActionButton: View {
-    let title: String
-    let icon: String
-    let isPressed: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.gray.opacity(0.15))
-                        .frame(width: 56, height: 56)
-
-                    Image(systemName: icon)
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(.white)
-                }
-
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-            }
-            .frame(maxWidth: .infinity)
-            .scaleEffect(isPressed ? 0.92 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -441,7 +333,85 @@ struct NoTeamHeroCard: View {
     }
 }
 
-// MARK: - Communication Card
+// MARK: - Upcoming Games Card
+
+struct UpcomingGamesCard: View {
+    let games: [Schedule]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(games) { game in
+                NavigationLink(destination: ScheduleDetailView(schedule: game)) {
+                    HStack(spacing: 12) {
+                        // Game Type Icon
+                        ZStack {
+                            Circle()
+                                .fill(game.eventType == .tournament ? Color.purple.opacity(0.15) : Color.orange.opacity(0.15))
+                                .frame(width: 44, height: 44)
+
+                            Image(systemName: game.eventType == .tournament ? "trophy.fill" : "sportscourt.fill")
+                                .font(.system(size: 20))
+                                .foregroundStyle(game.eventType == .tournament ? Color.purple : Color.orange)
+                        }
+
+                        // Game Details
+                        VStack(alignment: .leading, spacing: 4) {
+                            if let opponent = game.opponent {
+                                Text("vs \(opponent)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            } else {
+                                Text(game.eventType.rawValue)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+
+                            HStack(spacing: 4) {
+                                Image(systemName: "location.fill")
+                                    .font(.caption2)
+                                Text(game.location)
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.gray)
+                        }
+
+                        Spacer()
+
+                        // Date & Time
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text(game.startTime.formatted(date: .abbreviated, time: .omitted))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                            Text(game.startTime.formatted(date: .omitted, time: .shortened))
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.white)
+                        }
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    }
+                    .padding(.vertical, 8)
+                }
+                .buttonStyle(PlainButtonStyle())
+
+                if game.id != games.last?.id {
+                    Divider()
+                        .background(Color.gray.opacity(0.2))
+                }
+            }
+        }
+        .padding()
+        .background(Color(white: 0.1))
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Messages Card (Announcements)
 
 struct RecentAnnouncementsCard: View {
     let announcements: [Announcement]
@@ -517,6 +487,161 @@ struct RecentAnnouncementsCard: View {
         } else {
             let days = hours / 24
             return "\(days)d ago"
+        }
+    }
+}
+
+// MARK: - Coach's Corner Card
+
+struct CoachsCornerCard: View {
+    // Curated quotes from Coach K and other legendary coaches
+    let quotes: [(quote: String, author: String)] = [
+        ("The harder you work, the harder it is to surrender.", "Coach K"),
+        ("Excellence is the gradual result of always striving to do better.", "Coach K"),
+        ("A basketball team is like the five fingers on your hand. If you can get them all together, you have a fist.", "Coach K"),
+        ("The only way to get people to like working hard is to motivate them. Today, people must understand why they're working hard.", "Coach K"),
+        ("It's not about any one person. You've got to get over yourself and realize that it takes a group to get this thing done.", "Gregg Popovich"),
+        ("Basketball is a beautiful game when the five players on the court play with one heartbeat.", "Dean Smith"),
+        ("Good teams become great ones when the members trust each other enough to surrender the 'me' for the 'we'.", "Phil Jackson")
+    ]
+
+    @State private var currentQuoteIndex = 0
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Coach's Corner", icon: "quote.opening")
+
+            VStack(alignment: .leading, spacing: 12) {
+                Image(systemName: "quote.closing")
+                    .font(.system(size: 28))
+                    .foregroundStyle(Color.orange.opacity(0.3))
+
+                Text(quotes[currentQuoteIndex].quote)
+                    .font(.body)
+                    .foregroundStyle(.white)
+                    .lineSpacing(4)
+
+                HStack {
+                    Spacer()
+                    Text("— \(quotes[currentQuoteIndex].author)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.orange)
+                }
+            }
+            .padding()
+            .background(
+                LinearGradient(
+                    colors: [Color.orange.opacity(0.1), Color.black],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+            )
+            .cornerRadius(12)
+        }
+        .onAppear {
+            // Rotate through quotes daily
+            let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
+            currentQuoteIndex = dayOfYear % quotes.count
+        }
+    }
+}
+
+// MARK: - Training Video Card
+
+struct TrainingVideoCard: View {
+    // Sample training video - in production this would come from coach assignments
+    let trainingVideo = (
+        title: "Three Man Weave Drill",
+        description: "Master this essential passing drill for next practice",
+        duration: "4:32",
+        thumbnail: "play.rectangle.fill",
+        assignedBy: "Coach Mike"
+    )
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Training Video", icon: "play.rectangle.fill")
+
+            Button(action: {
+                // TODO: Open video player
+            }) {
+                VStack(spacing: 0) {
+                    // Video thumbnail/preview
+                    ZStack {
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.orange.opacity(0.3), Color.orange.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(height: 180)
+
+                        VStack(spacing: 12) {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 60))
+                                .foregroundStyle(.white)
+
+                            Text("Tap to watch")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.8))
+                        }
+
+                        // Duration badge
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Text(trainingVideo.duration)
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(.black.opacity(0.7))
+                                    .cornerRadius(4)
+                                    .padding(8)
+                            }
+                            Spacer()
+                        }
+                    }
+
+                    // Video info
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(trainingVideo.title)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+
+                        Text(trainingVideo.description)
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .lineLimit(2)
+
+                        HStack {
+                            Image(systemName: "person.circle.fill")
+                                .font(.caption)
+                            Text("Assigned by \(trainingVideo.assignedBy)")
+                                .font(.caption)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(.orange)
+                    }
+                    .padding()
+                }
+                .background(Color(white: 0.1))
+                .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 }
@@ -615,16 +740,15 @@ struct WeekCalendarCard: View {
     }
 }
 
-// MARK: - Sticky Header
+// MARK: - Clean iOS Header
 
-struct StickyParentHeader: View {
-    let greeting: String
-    let parentName: String
+struct CleanIOSHeader: View {
+    let title: String
     let parentInitials: String
     let scrollOffset: CGFloat
     @Binding var height: CGFloat
 
-    @State private var showingSettings = false
+    @State private var showingAccountMenu = false
     @State private var showingNotifications = false
 
     private var isCompact: Bool {
@@ -635,96 +759,61 @@ struct StickyParentHeader: View {
         min(1.0, max(0.95, 1.0 - (scrollOffset / 200)))
     }
 
-    private var scaleEffect: CGFloat {
-        isCompact ? 0.95 : 1.0
-    }
-
-    private var verticalPadding: CGFloat {
-        isCompact ? 8 : 16
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                // Profile Avatar
-                Button(action: { showingSettings = true }) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.orange, .orange.opacity(0.8)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                // Profile Avatar Button (leads to account menu)
+                Button(action: { showingAccountMenu = true }) {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.orange, .orange.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
-                            .frame(width: isCompact ? 44 : 56, height: isCompact ? 44 : 56)
-
-                        Text(parentInitials)
-                            .font(.system(size: isCompact ? 16 : 20, weight: .semibold, design: .rounded))
-                            .foregroundColor(.black)
-
-                        // Online indicator
-                        if !isCompact {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 14, height: 14)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.black, lineWidth: 2)
-                                )
-                                .offset(x: 18, y: 18)
-                        }
-                    }
+                        )
+                        .frame(width: 32, height: 32)
+                        .overlay(
+                            Text(parentInitials)
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(.black)
+                        )
                 }
 
-                // Greeting
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(greeting), \(parentName)")
-                        .font(isCompact ? .headline : .title2)
-                        .fontWeight(isCompact ? .semibold : .bold)
-                        .foregroundColor(.white)
-                }
+                // Title
+                Text(title)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
 
                 Spacer()
 
-                // Action Buttons
-                HStack(spacing: 12) {
-                    Button(action: { showingNotifications = true }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.gray.opacity(0.15))
-                                .frame(width: isCompact ? 36 : 40, height: isCompact ? 36 : 40)
+                // Notification Bell
+                Button(action: { showingNotifications = true }) {
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "bell")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 32, height: 32)
 
-                            Image(systemName: "bell")
-                                .font(.system(size: isCompact ? 16 : 18, weight: .medium))
-                                .foregroundColor(.white)
-
-                            // Notification badge
-                            Circle()
-                                .fill(Color.red)
-                                .frame(width: 10, height: 10)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.black, lineWidth: 2)
-                                )
-                                .offset(x: 12, y: -12)
-                        }
-                    }
-
-                    Button(action: { showingSettings = true }) {
+                        // Red badge for unread notifications
                         Circle()
-                            .fill(Color.gray.opacity(0.15))
-                            .frame(width: isCompact ? 36 : 40, height: isCompact ? 36 : 40)
-                            .overlay(
-                                Image(systemName: "ellipsis")
-                                    .font(.system(size: isCompact ? 16 : 18, weight: .medium))
-                                    .foregroundColor(.white)
-                            )
+                            .fill(Color.red)
+                            .frame(width: 8, height: 8)
+                            .offset(x: 2, y: -2)
                     }
                 }
+
+                // More menu (ellipsis)
+                Button(action: { showingAccountMenu = true }) {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(.white)
+                        .frame(width: 32, height: 32)
+                }
             }
-            .padding(.horizontal)
-            .padding(.vertical, verticalPadding)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(
                 ZStack {
                     Color.black
@@ -744,7 +833,6 @@ struct StickyParentHeader: View {
                     .background(Color.gray.opacity(0.3))
             }
         }
-        .scaleEffect(scaleEffect)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isCompact)
         .background(
             GeometryReader { geometry in
@@ -757,8 +845,11 @@ struct StickyParentHeader: View {
                     }
             }
         )
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
+        .sheet(isPresented: $showingAccountMenu) {
+            AccountMenuView()
+        }
+        .sheet(isPresented: $showingNotifications) {
+            NotificationListView()
         }
     }
 }

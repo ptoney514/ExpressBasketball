@@ -33,7 +33,8 @@ struct RosterListView: View {
                     }
                 }
             }
-            .navigationTitle("Team Roster")
+            .navigationTitle("Roster")
+            .cleanIOSHeader()
             .overlay {
                 if players.isEmpty {
                     ContentUnavailableView(

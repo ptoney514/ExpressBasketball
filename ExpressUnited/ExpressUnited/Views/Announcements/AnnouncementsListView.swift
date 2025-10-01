@@ -53,7 +53,8 @@ struct AnnouncementsListView: View {
                     }
                 }
             }
-            .navigationTitle("Announcements")
+            .navigationTitle("News")
+            .cleanIOSHeader()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {

@@ -14,7 +14,10 @@ struct TeamCodeEntryView: View {
     @State private var isLoading = false
     @State private var errorMessage = ""
     @State private var showingScanner = false
+    @State private var showingPushPermission = false
     @Binding var hasJoinedTeam: Bool
+
+    private let pushManager = PushNotificationManager.shared
 
     var body: some View {
         NavigationStack {
@@ -91,6 +94,12 @@ struct TeamCodeEntryView: View {
             }
             .navigationTitle("")
             .navigationBarHidden(true)
+            .sheet(isPresented: $showingPushPermission) {
+                PushNotificationPermissionView(
+                    isPresented: $showingPushPermission,
+                    onComplete: completeOnboarding
+                )
+            }
         }
     }
 
@@ -130,10 +139,25 @@ struct TeamCodeEntryView: View {
 
         do {
             try modelContext.save()
-            hasJoinedTeam = true
+
+            // Store team ID for push notification registration
+            UserDefaults.standard.set(demoTeam.id.uuidString, forKey: "currentTeamId")
+
+            // Show push notification permission prompt
+            showingPushPermission = true
         } catch {
             errorMessage = "Failed to save team data"
         }
+    }
+
+    private func completeOnboarding() {
+        // Register device token for the team if available
+        if let teamIdString = UserDefaults.standard.string(forKey: "currentTeamId"),
+           let teamId = UUID(uuidString: teamIdString) {
+            pushManager.registerDeviceTokenForTeam(teamId: teamId)
+        }
+
+        hasJoinedTeam = true
     }
 
     private func createDemoPlayers(for team: Team) {

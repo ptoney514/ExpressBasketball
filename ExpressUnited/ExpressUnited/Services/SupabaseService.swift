@@ -132,6 +132,106 @@ class SupabaseService: ObservableObject {
             }
         }
     }
+
+    // MARK: - Push Notification Device Token Management
+
+    /// Register device token for push notifications
+    nonisolated func registerDeviceToken(token: String, teamId: UUID) async throws {
+        ConfigurationManager.shared.log("📱 Registering device token for team: \(teamId)", level: .info)
+
+        let deviceInfo = DeviceTokenPayload(
+            device_token: token,
+            team_id: teamId.uuidString,
+            platform: "ios",
+            app_version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(deviceInfo)
+
+            let _ = try await client
+                .from("device_tokens")
+                .upsert(data)
+                .execute()
+
+            ConfigurationManager.shared.log("✅ Device token registered successfully", level: .info)
+        } catch {
+            ConfigurationManager.shared.log("❌ Failed to register device token: \(error)", level: .error)
+            throw error
+        }
+    }
+
+    /// Unregister device token (when user leaves team or disables notifications)
+    nonisolated func unregisterDeviceToken(token: String) async throws {
+        ConfigurationManager.shared.log("🗑️ Unregistering device token", level: .info)
+
+        do {
+            let _ = try await client
+                .from("device_tokens")
+                .delete()
+                .eq("device_token", value: token)
+                .execute()
+
+            ConfigurationManager.shared.log("✅ Device token unregistered", level: .info)
+        } catch {
+            ConfigurationManager.shared.log("❌ Failed to unregister device token: \(error)", level: .error)
+            throw error
+        }
+    }
+
+    /// Update notification preferences for a device token
+    nonisolated func updateNotificationPreferences(
+        token: String,
+        preferences: NotificationPreferences
+    ) async throws {
+        ConfigurationManager.shared.log("⚙️ Updating notification preferences", level: .info)
+
+        let updates = PreferencesUpdate(
+            notifications_enabled: preferences.notificationsEnabled,
+            game_reminders: preferences.gameReminders,
+            practice_reminders: preferences.practiceReminders,
+            announcement_alerts: preferences.announcementAlerts,
+            schedule_change_alerts: preferences.scheduleChangeAlerts,
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(updates)
+
+            let _ = try await client
+                .from("device_tokens")
+                .update(data)
+                .eq("device_token", value: token)
+                .execute()
+
+            ConfigurationManager.shared.log("✅ Notification preferences updated", level: .info)
+        } catch {
+            ConfigurationManager.shared.log("❌ Failed to update preferences: \(error)", level: .error)
+            throw error
+        }
+    }
+}
+
+// MARK: - Request Models
+
+struct DeviceTokenPayload: Encodable, Sendable {
+    let device_token: String
+    let team_id: String
+    let platform: String
+    let app_version: String
+    let updated_at: String
+}
+
+struct PreferencesUpdate: Encodable, Sendable {
+    let notifications_enabled: Bool
+    let game_reminders: Bool
+    let practice_reminders: Bool
+    let announcement_alerts: Bool
+    let schedule_change_alerts: Bool
+    let updated_at: String
 }
 
 // MARK: - Response Models
@@ -271,4 +371,39 @@ enum SupabaseError: Error {
     case invalidTeamCode
     case networkError
     case decodingError
+}
+
+// MARK: - Notification Preferences Model
+
+struct NotificationPreferences {
+    var notificationsEnabled: Bool
+    var gameReminders: Bool
+    var practiceReminders: Bool
+    var announcementAlerts: Bool
+    var scheduleChangeAlerts: Bool
+
+    init(
+        notificationsEnabled: Bool = true,
+        gameReminders: Bool = true,
+        practiceReminders: Bool = true,
+        announcementAlerts: Bool = true,
+        scheduleChangeAlerts: Bool = true
+    ) {
+        self.notificationsEnabled = notificationsEnabled
+        self.gameReminders = gameReminders
+        self.practiceReminders = practiceReminders
+        self.announcementAlerts = announcementAlerts
+        self.scheduleChangeAlerts = scheduleChangeAlerts
+    }
+
+    /// Load preferences from UserDefaults
+    static func loadFromUserDefaults() -> NotificationPreferences {
+        return NotificationPreferences(
+            notificationsEnabled: UserDefaults.standard.bool(forKey: "notificationsEnabled"),
+            gameReminders: UserDefaults.standard.bool(forKey: "gameReminders"),
+            practiceReminders: UserDefaults.standard.bool(forKey: "practiceReminders"),
+            announcementAlerts: UserDefaults.standard.bool(forKey: "announcementAlerts"),
+            scheduleChangeAlerts: UserDefaults.standard.bool(forKey: "scheduleChangeAlerts")
+        )
+    }
 }

@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct ExpressUnitedApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("hasJoinedTeam") private var hasJoinedTeam = false
     @State private var containerError: Error?
     @State private var retryCount = 0

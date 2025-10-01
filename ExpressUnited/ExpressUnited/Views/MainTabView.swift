@@ -18,21 +18,21 @@ struct MainTabView: View {
                 }
                 .tag(0)
 
-            ChatView()
-                .tabItem {
-                    Label("Chat", systemImage: "message.fill")
-                }
-                .tag(1)
-
-            TeamsView()
-                .tabItem {
-                    Label("Teams", systemImage: "person.3.fill")
-                }
-                .tag(2)
-
             ScheduleListView()
                 .tabItem {
                     Label("Schedule", systemImage: "calendar")
+                }
+                .tag(1)
+
+            RosterListView()
+                .tabItem {
+                    Label("Roster", systemImage: "person.3.fill")
+                }
+                .tag(2)
+
+            AnnouncementsListView()
+                .tabItem {
+                    Label("News", systemImage: "megaphone.fill")
                 }
                 .tag(3)
 
