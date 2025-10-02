@@ -45,5 +45,11 @@ struct MainTabView: View {
                 }
                 .tag(4)
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("DeepLinkToSchedule"))) { _ in
+            selectedTab = 1 // Switch to Schedule tab
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("DeepLinkToAnnouncement"))) { _ in
+            selectedTab = 3 // Switch to Messages tab
+        }
     }
 }
