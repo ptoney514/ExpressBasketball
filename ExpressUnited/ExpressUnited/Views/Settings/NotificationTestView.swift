@@ -31,17 +31,30 @@ struct NotificationTestView: View {
                     .buttonStyle(.borderedProminent)
                 }
 
-                HStack {
+                VStack(alignment: .leading, spacing: 8) {
                     Text("Device Token")
-                    Spacer()
+                        .font(.body)
+
                     if let token = pushManager.deviceToken {
-                        Text(String(token.prefix(20)) + "...")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        HStack {
+                            Text(token)
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                                .lineLimit(3)
+
+                            Button {
+                                UIPasteboard.general.string = token
+                                testMessage = "✅ Device token copied to clipboard"
+                            } label: {
+                                Image(systemName: "doc.on.doc")
+                                    .foregroundStyle(.blue)
+                            }
+                        }
                     } else {
-                        Text("Not registered")
+                        Text("Not registered - run on physical device")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.orange)
                     }
                 }
             }

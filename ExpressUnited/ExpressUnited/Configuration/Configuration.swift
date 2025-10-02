@@ -103,9 +103,9 @@ enum LogLevel: Int {
 }
 
 // MARK: - Configuration Manager
-class ConfigurationManager {
+class ConfigurationManager: @unchecked Sendable {
     static let shared = ConfigurationManager()
-    
+
     let environment: AppEnvironment
     
     private init() {
