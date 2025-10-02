@@ -7,6 +7,8 @@
 
 import Foundation
 import UserNotifications
+import Combine
+import UIKit
 
 class NotificationService: ObservableObject {
     static let shared = NotificationService()

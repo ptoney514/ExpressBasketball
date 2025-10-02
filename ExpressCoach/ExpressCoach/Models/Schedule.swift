@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Schedule {
+final class Schedule: @unchecked Sendable {
     var id: UUID
     var eventType: EventType
     var opponent: String?
@@ -48,7 +48,7 @@ final class Schedule {
         self.updatedAt = Date()
     }
 
-    enum EventType: String, CaseIterable, Codable {
+    enum EventType: String, CaseIterable, Codable, Sendable {
         case game = "Game"
         case practice = "Practice"
         case tournament = "Tournament"
@@ -56,7 +56,7 @@ final class Schedule {
         case teamEvent = "Team Event"
     }
 
-    enum GameResult: String, CaseIterable, Codable {
+    enum GameResult: String, CaseIterable, Codable, Sendable {
         case win = "Win"
         case loss = "Loss"
         case tie = "Tie"

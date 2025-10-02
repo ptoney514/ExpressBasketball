@@ -524,7 +524,7 @@ Coach
         // Animate progress
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
             if processingProgress < 1.0 {
-                processingProgress += 0.05
+                processingProgress = min(1.0, processingProgress + 0.05)
             } else {
                 timer.invalidate()
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -609,12 +609,26 @@ struct IdleAssistantView: View {
     let onPromptSelected: (ExamplePrompt) -> Void
     let onMicrophoneTap: () -> Void
     
+    @Environment(\.dismiss) private var dismiss
     @State private var greetingOpacity = 0.0
     @State private var promptsOpacity = 0.0
     @State private var buttonScale = 0.8
     
     var body: some View {
         VStack(spacing: 32) {
+            // Close button at top
+            HStack {
+                Spacer()
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(.gray)
+                        .background(Circle().fill(Color.black.opacity(0.5)))
+                }
+                .padding(.trailing, 20)
+                .padding(.top, 20)
+            }
+            
             Spacer()
             
             // Assistant greeting
@@ -831,6 +845,10 @@ struct RecordingAssistantView: View {
 struct ProcessingAssistantView: View {
     let progress: Double
     
+    private var clampedProgress: Double {
+        min(max(0, progress), 1.0)
+    }
+    
     var body: some View {
         VStack(spacing: 32) {
             Spacer()
@@ -841,15 +859,15 @@ struct ProcessingAssistantView: View {
                     Circle()
                         .stroke(Color("BasketballOrange").opacity(0.3), lineWidth: 2)
                         .frame(width: 60 + CGFloat(index * 20), height: 60 + CGFloat(index * 20))
-                        .scaleEffect(1 + progress * 0.5)
-                        .opacity(1 - progress)
+                        .scaleEffect(1 + clampedProgress * 0.5)
+                        .opacity(1 - clampedProgress)
                 }
                 
                 Image(systemName: "brain")
                     .font(.system(size: 40))
                     .foregroundColor(Color("BasketballOrange"))
-                    .scaleEffect(1.0 + progress * 0.2)
-                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: progress)
+                    .scaleEffect(1.0 + clampedProgress * 0.2)
+                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: clampedProgress)
             }
             
             VStack(spacing: 8) {
@@ -865,7 +883,7 @@ struct ProcessingAssistantView: View {
             }
             
             // Progress bar
-            ProgressView(value: progress)
+            ProgressView(value: clampedProgress)
                 .progressViewStyle(LinearProgressViewStyle(tint: Color("BasketballOrange")))
                 .frame(width: 200)
             
@@ -882,9 +900,24 @@ struct ResultAssistantView: View {
     let onRecordAgain: () -> Void
     let onEdit: () -> Void
     
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Close button at top right
+                HStack {
+                    Spacer()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 30))
+                            .foregroundColor(.gray)
+                            .background(Circle().fill(Color.black.opacity(0.5)))
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                
                 // Success indicator
                 ZStack {
                     Circle()
@@ -896,7 +929,7 @@ struct ResultAssistantView: View {
                         .foregroundColor(Color("CourtGreen"))
                         // .symbolEffect(.bounce) // iOS 18+ only
                 }
-                .padding(.top, 40)
+                .padding(.top, 20)
                 
                 Text("Perfect! Here's your message")
                     .font(.title2)

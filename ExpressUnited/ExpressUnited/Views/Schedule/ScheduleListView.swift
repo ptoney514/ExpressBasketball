@@ -53,6 +53,7 @@ struct ScheduleListView: View {
                 }
             }
             .navigationTitle("Schedule")
+            .cleanIOSHeader()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {

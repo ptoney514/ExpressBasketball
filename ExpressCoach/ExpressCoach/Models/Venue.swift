@@ -10,7 +10,7 @@ import SwiftData
 import CoreLocation
 
 @Model
-final class Venue {
+final class Venue: @unchecked Sendable {
     var id: UUID
     var name: String
     var fullAddress: String
@@ -75,7 +75,7 @@ final class Venue {
 }
 
 @Model
-final class Hotel {
+final class Hotel: @unchecked Sendable {
     var id: UUID
     var name: String
     var brandName: String? // e.g., "Marriott", "Hilton"
@@ -136,7 +136,7 @@ final class Hotel {
 }
 
 @Model
-final class Airport {
+final class Airport: @unchecked Sendable {
     var id: UUID
     var name: String
     var code: String // IATA code (e.g., "LAX", "JFK")
@@ -182,7 +182,7 @@ final class Airport {
 }
 
 @Model
-final class ParkingOption {
+final class ParkingOption: @unchecked Sendable {
     var id: UUID
     var name: String
     var type: ParkingType
@@ -227,7 +227,7 @@ final class ParkingOption {
         self.updatedAt = Date()
     }
 
-    enum ParkingType: String, CaseIterable, Codable {
+    enum ParkingType: String, CaseIterable, Codable, Sendable {
         case venueParking = "Venue Parking"
         case streetParking = "Street Parking"
         case publicGarage = "Public Garage"

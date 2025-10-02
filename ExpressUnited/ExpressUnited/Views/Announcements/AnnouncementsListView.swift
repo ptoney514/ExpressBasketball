@@ -53,7 +53,8 @@ struct AnnouncementsListView: View {
                     }
                 }
             }
-            .navigationTitle("Announcements")
+            .navigationTitle("News")
+            .cleanIOSHeader()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -119,7 +120,7 @@ struct AnnouncementRowView: View {
 
                     Spacer()
 
-                    Text(announcement.createdAt.formatted(.relative(presentation: .abbreviated)))
+                    Text(announcement.createdAt.formatted(.relative(presentation: .named)))
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }

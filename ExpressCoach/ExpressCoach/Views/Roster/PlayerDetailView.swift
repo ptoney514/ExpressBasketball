@@ -154,9 +154,9 @@ struct ParentInfoSection: View {
             Text("Parent/Guardian")
                 .font(.headline)
 
-            InfoRow(label: "Name", value: player.parentName)
-            InfoRow(label: "Email", value: player.parentEmail)
-            InfoRow(label: "Phone", value: player.parentPhone)
+            InfoRow(label: "Name", value: player.parentName ?? "Not provided")
+            InfoRow(label: "Email", value: player.parentEmail ?? "Not provided")
+            InfoRow(label: "Phone", value: player.parentPhone ?? "Not provided")
         }
         .padding()
         .background(Color(.systemGray6))
@@ -172,8 +172,8 @@ struct EmergencyInfoSection: View {
             Text("Emergency Contact")
                 .font(.headline)
 
-            InfoRow(label: "Name", value: player.emergencyContact)
-            InfoRow(label: "Phone", value: player.emergencyPhone)
+            InfoRow(label: "Name", value: player.emergencyContact ?? "Not provided")
+            InfoRow(label: "Phone", value: player.emergencyPhone ?? "Not provided")
         }
         .padding()
         .background(Color(.systemGray6))

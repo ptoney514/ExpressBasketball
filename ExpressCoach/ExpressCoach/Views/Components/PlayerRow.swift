@@ -54,9 +54,9 @@ struct PlayerRow: View {
 
                 if showContactInfo {
                     VStack(alignment: .leading, spacing: 1) {
-                        ContactRow(icon: "person.fill", text: player.parentName, color: .white)
-                        ContactRow(icon: "envelope.fill", text: player.parentEmail, color: Color("CourtGreen"))
-                        ContactRow(icon: "phone.fill", text: player.parentPhone, color: Color("BasketballOrange"))
+                        ContactRow(icon: "person.fill", text: player.parentName ?? "Not provided", color: .white)
+                        ContactRow(icon: "envelope.fill", text: player.parentEmail ?? "Not provided", color: Color("CourtGreen"))
+                        ContactRow(icon: "phone.fill", text: player.parentPhone ?? "Not provided", color: Color("BasketballOrange"))
                     }
                     .padding(.top, 4)
                 }

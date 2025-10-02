@@ -322,12 +322,14 @@ struct TeamSelectionView: View {
         // Create local SwiftData team from Supabase team
         let team = Team(
             name: supabaseTeam.name,
+            teamCode: supabaseTeam.teamCode,
+            organization: "Express Basketball",
             ageGroup: supabaseTeam.ageGroup,
-            coachName: supabaseTeam.coach?.firstName ?? "Coach"
+            season: "2024-25"
         )
-
-        // Set the team code manually
-        team.teamCode = supabaseTeam.teamCode
+        
+        // Set coach name separately
+        team.coachName = supabaseTeam.coach?.firstName ?? "Coach"
 
         // Set practice location and time if available
         if let location = supabaseTeam.practiceLocation {

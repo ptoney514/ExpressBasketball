@@ -130,20 +130,27 @@ struct TeamRowView: View {
             .ignoresSafeArea()
         
         TeamsListView(
-            teams: [
-                Team(
+            teams: {
+                let team1 = Team(
                     name: "Express Lightning",
+                    teamCode: "LIGHT01",
+                    organization: "Express Basketball",
                     ageGroup: "U14 Boys",
-                    coachName: "Mike Johnson",
-                    coachRole: .headCoach
-                ),
-                Team(
-                    name: "Express Thunder",
-                    ageGroup: "U12 Boys",
-                    coachName: "John Smith",
-                    coachRole: .headCoach
+                    season: "2024-25"
                 )
-            ],
+                team1.coachName = "Mike Johnson"
+                
+                let team2 = Team(
+                    name: "Express Thunder",
+                    teamCode: "THUND01",
+                    organization: "Express Basketball",
+                    ageGroup: "U12 Boys",
+                    season: "2024-25"
+                )
+                team2.coachName = "John Smith"
+                
+                return [team1, team2]
+            }(),
             selectedTeam: .constant(nil)
         )
         .padding()

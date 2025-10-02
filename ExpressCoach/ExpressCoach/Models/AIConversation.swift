@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class AIConversation {
+final class AIConversation: @unchecked Sendable {
     @Attribute(.unique) var id: UUID
     var teamId: UUID
     var parentName: String
@@ -41,14 +41,14 @@ final class AIConversation {
         self.aiConfidence = 0.0
     }
 
-    enum ConversationStatus: String, Codable, CaseIterable {
+    enum ConversationStatus: String, Codable, CaseIterable, Sendable {
         case open = "Open"
         case inProgress = "In Progress"
         case resolved = "Resolved"
         case archived = "Archived"
     }
 
-    enum Priority: String, Codable, CaseIterable {
+    enum Priority: String, Codable, CaseIterable, Sendable {
         case urgent = "Urgent"
         case high = "High"
         case normal = "Normal"
@@ -56,7 +56,7 @@ final class AIConversation {
     }
 }
 
-enum QuestionCategory: String, Codable, CaseIterable {
+enum QuestionCategory: String, Codable, CaseIterable, Sendable {
     case schedule = "Schedule"
     case practiceTime = "Practice Time"
     case gameDetails = "Game Details"

@@ -14,6 +14,9 @@ struct SettingsView: View {
     @State private var showingTeamCode = false
     @State private var showingAbout = false
     @State private var showingLeaveConfirmation = false
+    @State private var showingNotificationPreferences = false
+    @State private var showingEmailComingSoon = false
+    @State private var showingSMSComingSoon = false
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("gameReminders") private var gameReminders = true
     @AppStorage("practiceReminders") private var practiceReminders = true
@@ -50,19 +53,93 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Toggle("Enable Notifications", isOn: $notificationsEnabled)
+                    NavigationLink(destination: NotificationPreferencesView()) {
+                        HStack {
+                            Image(systemName: "bell.badge.fill")
+                                .foregroundStyle(.orange)
+                                .frame(width: 24)
 
-                    if notificationsEnabled {
-                        Toggle("Game Reminders", isOn: $gameReminders)
-                            .padding(.leading)
-                        Toggle("Practice Reminders", isOn: $practiceReminders)
-                            .padding(.leading)
-                        Toggle("Announcement Alerts", isOn: $announcementAlerts)
-                            .padding(.leading)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Push Notifications")
+                                    .font(.body)
+
+                                Text(notificationsEnabled ? "Enabled" : "Disabled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            if notificationsEnabled {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                    }
+
+                    Button(action: { showingEmailComingSoon = true }) {
+                        HStack {
+                            Image(systemName: "envelope.fill")
+                                .foregroundStyle(.gray)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Email Notifications")
+                                    .font(.body)
+                                    .foregroundStyle(.primary)
+
+                                Text("Coming Soon")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(.orange)
+                        }
+                    }
+
+                    Button(action: { showingSMSComingSoon = true }) {
+                        HStack {
+                            Image(systemName: "message.fill")
+                                .foregroundStyle(.gray)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("SMS Text Alerts")
+                                    .font(.body)
+                                    .foregroundStyle(.primary)
+
+                                Text("Coming Soon")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(.orange)
+                        }
                     }
                 } header: {
-                    Text("Notifications")
+                    Text("Communication Preferences")
+                } footer: {
+                    Text("Choose how you want to receive updates from your team. Push notifications are available now, with email and SMS coming soon!")
                 }
+
+                #if DEBUG
+                Section {
+                    NavigationLink(destination: NotificationTestView()) {
+                        Label("Notification Testing", systemImage: "hammer.fill")
+                            .foregroundStyle(.purple)
+                    }
+                } header: {
+                    Text("Developer Tools")
+                } footer: {
+                    Text("Debug tools for testing notifications")
+                }
+                #endif
 
                 Section {
                     NavigationLink(destination: SupportView()) {
@@ -109,6 +186,12 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("Are you sure you want to leave this team? You'll need the team code to rejoin.")
+            }
+            .sheet(isPresented: $showingEmailComingSoon) {
+                ComingSoonFeatureView(feature: .emailNotifications)
+            }
+            .sheet(isPresented: $showingSMSComingSoon) {
+                ComingSoonFeatureView(feature: .smsAlerts)
             }
         }
     }

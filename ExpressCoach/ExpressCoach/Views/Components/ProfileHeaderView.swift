@@ -264,12 +264,16 @@ struct NotificationRow: View {
             .ignoresSafeArea()
         
         ProfileHeaderView(
-            team: Team(
-                name: "Express United U16",
-                ageGroup: "U16",
-                coachName: "John Smith",
-                coachRole: .headCoach
-            ),
+            team: {
+                let team = Team(
+                    name: "Express United U16",
+                    teamCode: "TEST01",
+                    ageGroup: "U16"
+                )
+                team.coachName = "John Smith"
+                team.coachRole = .headCoach
+                return team
+            }(),
             timeOfDayGreeting: "Good evening"
         )
         .padding()

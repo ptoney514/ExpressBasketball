@@ -223,12 +223,15 @@ struct TeamCodeDetailView: View {
 
 // Preview
 #Preview {
-    let sampleTeam = Team(
-        name: "Express Lightning",
-        ageGroup: "U14",
-        coachName: "Coach Johnson",
-        coachRole: .headCoach
-    )
-
-    return TeamCodeDetailView(team: sampleTeam)
+    TeamCodeDetailView(team: {
+        let team = Team(
+            name: "Express Lightning",
+            teamCode: "LIGHT01",
+            organization: "Express Basketball",
+            ageGroup: "U14",
+            season: "2024-25"
+        )
+        team.coachName = "Coach Johnson"
+        return team
+    }())
 }

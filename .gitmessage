@@ -1,0 +1,10 @@
+# <type>: <subject> [EB-XXX]
+#
+# Types: feat, fix, docs, style, refactor, test, chore
+# 
+# Examples:
+# feat: Add roster management to coach app [EB-123]
+# fix: Resolve SwiftData sync issue [EB-124]
+# 
+# Remember: Only reference Linear issues for multi-session work!
+# Most commits won't need an issue reference.

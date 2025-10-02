@@ -66,14 +66,21 @@ struct CreateTeamView: View {
         }
     }
 
+    private func generateTeamCode() -> String {
+        // Generate a random 6-character alphanumeric code
+        let letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+        return String((0..<6).map { _ in letters.randomElement()! })
+    }
+    
     private func createTeam() {
         let team = Team(
             name: teamName,
-            ageGroup: ageGroup,
-            coachName: coachName,
-            primaryColor: primaryColor.toHexString(),
-            secondaryColor: secondaryColor.toHexString()
+            teamCode: generateTeamCode(),
+            ageGroup: ageGroup
         )
+        team.coachName = coachName
+        team.primaryColor = primaryColor.toHexString()
+        team.secondaryColor = secondaryColor.toHexString()
 
         modelContext.insert(team)
 

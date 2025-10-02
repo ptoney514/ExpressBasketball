@@ -18,6 +18,9 @@ struct TeamRosterDetailView: View {
     @State private var filteredPlayers: [Player] = []
     @State private var isLoading = false
     @State private var searchTask: Task<Void, Never>?
+    @State private var showingBulkImport = false
+    @State private var showingExportOptions = false
+    @State private var csvExportData: Data?
 
     var sortedPlayers: [Player] {
         guard let players = team.players else { return [] }
@@ -71,14 +74,32 @@ struct TeamRosterDetailView: View {
         .searchable(text: $searchText, prompt: "Search players")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    HapticManager.shared.lightImpact()
-                    showingAddPlayer = true
-                }) {
-                    Image(systemName: "plus")
+                Menu {
+                    Button {
+                        HapticManager.shared.lightImpact()
+                        showingAddPlayer = true
+                    } label: {
+                        Label("Add Single Player", systemImage: "person.badge.plus")
+                    }
+
+                    Button {
+                        HapticManager.shared.lightImpact()
+                        showingBulkImport = true
+                    } label: {
+                        Label("Bulk Import", systemImage: "square.and.arrow.down")
+                    }
+
+                    Divider()
+
+                    Button {
+                        exportRosterToCSV()
+                    } label: {
+                        Label("Export to CSV", systemImage: "square.and.arrow.up")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
-                .accessibilityLabel("Add player")
-                .accessibilityHint(AppConstants.Accessibility.addPlayerHint)
+                .accessibilityLabel("Roster options")
             }
         }
         .sheet(isPresented: $showingAddPlayer) {
@@ -86,6 +107,15 @@ struct TeamRosterDetailView: View {
         }
         .sheet(item: $selectedPlayer) { player in
             PlayerDetailView(player: player)
+        }
+        .sheet(isPresented: $showingBulkImport) {
+            BulkImportView(team: team)
+        }
+        .sheet(isPresented: $showingExportOptions) {
+            if let csvData = csvExportData,
+               let url = saveCSVToTempFile(data: csvData) {
+                ShareSheet(items: [url])
+            }
         }
         .safeAreaInset(edge: .top) {
             TeamRosterHeader(team: team)
@@ -97,6 +127,37 @@ struct TeamRosterDetailView: View {
             updateFilteredPlayers()
         }
         .withAlertManager(alertManager)
+    }
+
+    // MARK: - CSV Export
+
+    private func exportRosterToCSV() {
+        let service = CSVImportService()
+        let csvString = service.generateCSV(from: sortedPlayers)
+
+        if let data = csvString.data(using: .utf8) {
+            csvExportData = data
+            showingExportOptions = true
+        } else {
+            alertManager.showError(
+                NSError(domain: "CSVExport", code: 1),
+                customMessage: "Failed to generate CSV file"
+            )
+        }
+    }
+
+    private func saveCSVToTempFile(data: Data) -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileName = "\(team.name.replacingOccurrences(of: " ", with: "_"))_roster.csv"
+        let fileURL = tempDir.appendingPathComponent(fileName)
+
+        do {
+            try data.write(to: fileURL)
+            return fileURL
+        } catch {
+            alertManager.showError(error, customMessage: "Failed to save CSV file")
+            return nil
+        }
     }
 }
 
