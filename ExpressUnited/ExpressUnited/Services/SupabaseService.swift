@@ -9,7 +9,7 @@ import Foundation
 import Supabase
 import Combine
 
-class SupabaseService: ObservableObject {
+class SupabaseService: ObservableObject, @unchecked Sendable {
     static let shared = SupabaseService()
 
     private(set) var client: SupabaseClient

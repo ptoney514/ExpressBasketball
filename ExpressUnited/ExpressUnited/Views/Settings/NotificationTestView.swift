@@ -271,7 +271,11 @@ struct NotificationTestView: View {
 
     private func setBadgeCount(_ count: Int) {
         Task { @MainActor in
-            UIApplication.shared.applicationIconBadgeNumber = count
+            if #available(iOS 16.0, *) {
+                UNUserNotificationCenter.current().setBadgeCount(count)
+            } else {
+                UIApplication.shared.applicationIconBadgeNumber = count
+            }
             testMessage = "✅ Badge set to \(count)"
         }
     }

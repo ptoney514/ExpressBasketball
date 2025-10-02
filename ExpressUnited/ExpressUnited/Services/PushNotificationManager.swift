@@ -219,14 +219,22 @@ class PushNotificationManager: NSObject, ObservableObject {
         Task { @MainActor in
             // This will be implemented to query SwiftData for unread announcements
             let unreadCount = 0 // TODO: Query SwiftData
-            UIApplication.shared.applicationIconBadgeNumber = unreadCount
+            if #available(iOS 16.0, *) {
+                UNUserNotificationCenter.current().setBadgeCount(unreadCount)
+            } else {
+                UIApplication.shared.applicationIconBadgeNumber = unreadCount
+            }
         }
     }
 
     /// Clear badge count
     func clearBadgeCount() {
         Task { @MainActor in
-            UIApplication.shared.applicationIconBadgeNumber = 0
+            if #available(iOS 16.0, *) {
+                UNUserNotificationCenter.current().setBadgeCount(0)
+            } else {
+                UIApplication.shared.applicationIconBadgeNumber = 0
+            }
         }
     }
 
