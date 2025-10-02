@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @Query(filter: #Predicate<Announcement> { !$0.isRead }) private var unreadAnnouncements: [Announcement]
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -32,8 +34,9 @@ struct MainTabView: View {
 
             AnnouncementsListView()
                 .tabItem {
-                    Label("News", systemImage: "megaphone.fill")
+                    Label("Messages", systemImage: "message.fill")
                 }
+                .badge(unreadAnnouncements.count)
                 .tag(3)
 
             MoreView()

@@ -128,6 +128,19 @@ struct SettingsView: View {
                     Text("Choose how you want to receive updates from your team. Push notifications are available now, with email and SMS coming soon!")
                 }
 
+                #if DEBUG
+                Section {
+                    NavigationLink(destination: NotificationTestView()) {
+                        Label("Notification Testing", systemImage: "hammer.fill")
+                            .foregroundStyle(.purple)
+                    }
+                } header: {
+                    Text("Developer Tools")
+                } footer: {
+                    Text("Debug tools for testing notifications")
+                }
+                #endif
+
                 Section {
                     NavigationLink(destination: SupportView()) {
                         Label("Help & Support", systemImage: "questionmark.circle")
