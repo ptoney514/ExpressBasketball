@@ -806,97 +806,61 @@ struct StickyProfileHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                // Profile Avatar
+                // Profile Avatar - simplified to match ExpressUnited
                 Button(action: { showingProfileView = true }) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color("BasketballOrange"),
-                                        Color("BasketballOrange").opacity(0.8)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.orange, .orange.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
-                            .frame(width: isCompact ? 44 : 56, height: isCompact ? 44 : 56)
-                        
-                        Text(coachInitials)
-                            .font(.system(size: isCompact ? 16 : 20, weight: .semibold, design: .rounded))
-                            .foregroundColor(.black)
-                        
-                        // Online indicator (hidden when compact)
-                        if !isCompact {
-                            Circle()
-                                .fill(Color("CourtGreen"))
-                                .frame(width: 14, height: 14)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color("BackgroundDark"), lineWidth: 2)
-                                )
-                                .offset(x: 18, y: 18)
-                                .transition(.scale.combined(with: .opacity))
-                        }
-                    }
+                        )
+                        .frame(width: 32, height: 32)
+                        .overlay(
+                            Text(coachInitials)
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(.black)
+                        )
                 }
-                .buttonStyle(ProfileScaleButtonStyle())
                 
-                // Greeting only - no title or team name
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(timeOfDayGreeting), \(coachFirstName)")
-                        .font(isCompact ? .headline : .title2)
-                        .fontWeight(isCompact ? .semibold : .bold)
-                        .foregroundColor(.white)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isCompact)
-                }
+                // Home Title - clean and simple
+                Text("Home")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
                 
                 Spacer()
                 
-                // Quick Actions
-                HStack(spacing: 12) {
+                // Quick Actions - simplified to match ExpressUnited
+                HStack(spacing: 16) {
                     // Notifications Button
                     Button(action: { showingNotifications = true }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.gray.opacity(0.15))
-                                .frame(width: isCompact ? 36 : 40, height: isCompact ? 36 : 40)
-                            
+                        ZStack(alignment: .topTrailing) {
                             Image(systemName: "bell")
-                                .font(.system(size: isCompact ? 16 : 18, weight: .medium))
+                                .font(.system(size: 20, weight: .medium))
                                 .foregroundColor(.white)
-                            
-                            // Notification badge
-                            if true { // Replace with actual notification check
-                                Circle()
-                                    .fill(Color.red)
-                                    .frame(width: 10, height: 10)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color("BackgroundDark"), lineWidth: 2)
-                                    )
-                                    .offset(x: 12, y: -12)
-                            }
+                                .frame(width: 32, height: 32)
+
+                            // Red badge for unread notifications
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 8, height: 8)
+                                .offset(x: 2, y: -2)
                         }
                     }
-                    .buttonStyle(ProfileScaleButtonStyle())
-                    
-                    // Settings Button
+
+                    // Settings Menu Button
                     Button(action: { showingProfileView = true }) {
-                        Circle()
-                            .fill(Color.gray.opacity(0.15))
-                            .frame(width: isCompact ? 36 : 40, height: isCompact ? 36 : 40)
-                            .overlay(
-                                Image(systemName: "ellipsis")
-                                    .font(.system(size: isCompact ? 16 : 18, weight: .medium))
-                                    .foregroundColor(.white)
-                            )
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 32, height: 32)
                     }
-                    .buttonStyle(ProfileScaleButtonStyle())
                 }
             }
-            .padding(.horizontal)
-            .padding(.vertical, verticalPadding)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(
                 // Blurred background with dynamic opacity
                 ZStack {
