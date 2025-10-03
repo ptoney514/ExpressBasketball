@@ -131,19 +131,20 @@ struct PlayerDTO: Codable, Sendable {
 // MARK: - Main Sync Service
 class SupabaseSyncService: ObservableObject {
     static let shared = SupabaseSyncService()
-    
+
     @Published var syncStatus: SyncStatus = .idle
     @Published var lastSyncDate: Date?
     @Published var pendingOperations: [SyncOperation] = []
-    
+    @Published var isSyncEnabled: Bool = false // Disabled by default to prevent crashes
+
     private let supabase: SupabaseClient
     private var modelContext: ModelContext?
     private var syncTimer: Timer?
     private var realtimeChannel: RealtimeChannelV2?
     private var cancellables = Set<AnyCancellable>()
-    
+
     private let syncQueue = DispatchQueue(label: "com.expresscoach.sync", qos: .background)
-    private let pendingOperationsKey = "pendingSync Operations"
+    private let pendingOperationsKey = "pendingSyncOperations"
     
     private init() {
         let config = ConfigurationManager.shared
@@ -192,24 +193,30 @@ class SupabaseSyncService: ObservableObject {
     }
     
     func performFullSync() async {
+        // Only sync if explicitly enabled
+        guard isSyncEnabled else {
+            ConfigurationManager.shared.log("⚠️ Sync skipped (disabled)", level: .debug)
+            return
+        }
+
         guard let modelContext = modelContext else { return }
-        
+
         syncStatus = .syncing
-        
+
         do {
             // 1. Process pending operations first
             try await processPendingOperations()
-            
+
             // 2. Push local changes
             try await pushLocalChanges()
-            
+
             // 3. Pull remote changes
             try await pullRemoteChanges()
-            
+
             // 4. Update sync status
             lastSyncDate = Date()
             syncStatus = .success(Date())
-            
+
             ConfigurationManager.shared.log("✅ Full sync completed successfully", level: .info)
         } catch {
             syncStatus = .failure(error)
@@ -221,31 +228,37 @@ class SupabaseSyncService: ObservableObject {
     
     private func pushLocalChanges() async throws {
         guard let modelContext = modelContext else { return }
-        
-        // Fetch unsynced teams
-        let unsyncedTeamsPredicate = #Predicate<Team> { team in
-            team.lastSyncedAt == nil || team.updatedAt > team.lastSyncedAt!
+
+        // Fetch all teams and filter manually to avoid predicate issues
+        let allTeams = try modelContext.fetch(FetchDescriptor<Team>())
+        let unsyncedTeams = allTeams.filter { team in
+            guard let lastSynced = team.lastSyncedAt else { return true }
+            return team.updatedAt > lastSynced
         }
-        
-        let unsyncedTeams = try modelContext.fetch(
-            FetchDescriptor<Team>(predicate: unsyncedTeamsPredicate)
-        )
-        
+
         for team in unsyncedTeams {
-            try await syncTeam(team)
+            do {
+                try await syncTeam(team)
+            } catch {
+                ConfigurationManager.shared.log("⚠️ Failed to sync team \(team.name): \(error)", level: .warning)
+                // Continue with other teams even if one fails
+            }
         }
-        
-        // Fetch unsynced players
-        let unsyncedPlayersPredicate = #Predicate<Player> { player in
-            player.lastSyncedAt == nil || player.updatedAt > player.lastSyncedAt!
+
+        // Fetch all players and filter manually
+        let allPlayers = try modelContext.fetch(FetchDescriptor<Player>())
+        let unsyncedPlayers = allPlayers.filter { player in
+            guard let lastSynced = player.lastSyncedAt else { return true }
+            return player.updatedAt > lastSynced
         }
-        
-        let unsyncedPlayers = try modelContext.fetch(
-            FetchDescriptor<Player>(predicate: unsyncedPlayersPredicate)
-        )
-        
+
         for player in unsyncedPlayers {
-            try await syncPlayer(player)
+            do {
+                try await syncPlayer(player)
+            } catch {
+                ConfigurationManager.shared.log("⚠️ Failed to sync player \(player.firstName) \(player.lastName): \(error)", level: .warning)
+                // Continue with other players even if one fails
+            }
         }
     }
     
@@ -393,8 +406,14 @@ class SupabaseSyncService: ObservableObject {
     */
     
     // MARK: - Background Sync
-    
+
     private func setupPeriodicSync() {
+        // Only setup periodic sync if explicitly enabled
+        guard isSyncEnabled else {
+            ConfigurationManager.shared.log("⚠️ Periodic sync disabled", level: .info)
+            return
+        }
+
         // Sync every 5 minutes when app is active
         syncTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
             Task { @MainActor in
