@@ -899,7 +899,22 @@ struct StickyProfileHeader: View {
             }
         )
         .fullScreenCover(isPresented: $showingProfileView) {
-            ProfileView()
+            NavigationStack {
+                ProfileView()
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: { showingProfileView = false }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Home")
+                                        .font(.body)
+                                }
+                                .foregroundColor(.orange)
+                            }
+                        }
+                    }
+            }
         }
         .sheet(isPresented: $showingNotifications) {
             NotificationsListView()
