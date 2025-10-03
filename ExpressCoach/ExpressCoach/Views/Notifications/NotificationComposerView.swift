@@ -20,6 +20,12 @@ struct NotificationComposerView: View {
     @State private var scheduleDate = Date()
     @State private var practiceLocation = ""
     @State private var isUrgent = false
+    @State private var sendPushNotification = true
+    @State private var isSending = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
+    @StateObject private var pushService = PushNotificationService.shared
 
     var body: some View {
         NavigationStack {
@@ -118,6 +124,17 @@ struct NotificationComposerView: View {
                 Section("Options") {
                     Toggle("Urgent Message", isOn: $isUrgent)
                         .toggleStyle(SwitchToggleStyle(tint: Color("BasketballOrange")))
+
+                    Toggle(isOn: $sendPushNotification) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Send Push Notification")
+                                .font(.body)
+                            Text("Notify parents on ExpressUnited app")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .toggleStyle(SwitchToggleStyle(tint: Color("BasketballOrange")))
                 }
             }
             .navigationTitle("Send Notification")
@@ -127,13 +144,41 @@ struct NotificationComposerView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .disabled(isSending)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Send") {
                         sendNotification()
                     }
-                    .disabled(!canSendNotification())
-                    .foregroundColor(canSendNotification() ? Color("BasketballOrange") : .secondary)
+                    .disabled(!canSendNotification() || isSending)
+                    .foregroundColor(canSendNotification() && !isSending ? Color("BasketballOrange") : .secondary)
+                }
+            }
+            .alert("Notification Sent", isPresented: $showAlert) {
+                Button("OK") {
+                    dismiss()
+                }
+            } message: {
+                Text(alertMessage)
+            }
+            .overlay {
+                if isSending {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Text("Sending notification...")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                        .padding(32)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(16)
+                        .shadow(radius: 10)
+                    }
                 }
             }
             .preferredColorScheme(.dark)
@@ -173,13 +218,60 @@ struct NotificationComposerView: View {
     }
 
     private func sendNotification() {
-        // TODO: Implement actual notification sending
-        // For now, just dismiss the view
-        print("Sending notification to \(selectedRecipient.displayName) for team \(selectedTeam?.name ?? "Unknown")")
+        guard let team = selectedTeam else { return }
+
+        // Save message locally (could store in announcements or separate messages table)
+        print("Sending notification to \(selectedRecipient.displayName) for team \(team.name)")
         print("Message: \(generateTemplateMessage())")
         print("Urgent: \(isUrgent)")
 
-        dismiss()
+        // Send push notification if enabled
+        if sendPushNotification {
+            Task {
+                await sendPushNotificationToParents(team: team)
+            }
+        } else {
+            dismiss()
+        }
+    }
+
+    private func sendPushNotificationToParents(team: Team) async {
+        isSending = true
+
+        do {
+            let message = generateTemplateMessage()
+            let notificationTitle = selectedTemplate == .custom
+                ? "Team Message"
+                : selectedTemplate.displayName
+
+            let type: NotificationType
+            switch selectedTemplate {
+            case .practiceReminder:
+                type = .practiceReminder
+            case .practiceChange:
+                type = .scheduleChange
+            case .gameUpdate:
+                type = .gameReminder
+            case .custom:
+                type = .announcement
+            }
+
+            let count = try await pushService.sendPushNotification(
+                teamId: team.id,
+                title: notificationTitle,
+                body: message,
+                type: type,
+                badge: 1
+            )
+
+            alertMessage = "Push notification sent to \(count) parent\(count == 1 ? "" : "s")"
+            showAlert = true
+        } catch {
+            alertMessage = "Failed to send notification: \(error.localizedDescription)"
+            showAlert = true
+        }
+
+        isSending = false
     }
 }
 
