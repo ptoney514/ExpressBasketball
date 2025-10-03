@@ -154,6 +154,12 @@ struct CreateAnnouncementView: View {
     @State private var content = ""
     @State private var priority: Announcement.Priority = .normal
     @State private var isPinned = false
+    @State private var sendPushNotification = true
+    @State private var isSending = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
+    @StateObject private var pushService = PushNotificationService.shared
 
     var body: some View {
         NavigationStack {
@@ -174,6 +180,22 @@ struct CreateAnnouncementView: View {
 
                     Toggle("Pin to Top", isOn: $isPinned)
                 }
+
+                Section {
+                    Toggle(isOn: $sendPushNotification) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Send Push Notification")
+                                .font(.body)
+                            Text("Notify all parents on ExpressUnited app")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("Parents will receive a push notification on their devices")
+                }
             }
             .navigationTitle("New Announcement")
             .navigationBarTitleDisplayMode(.inline)
@@ -182,6 +204,7 @@ struct CreateAnnouncementView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .disabled(isSending)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -189,7 +212,34 @@ struct CreateAnnouncementView: View {
                         createAnnouncement()
                     }
                     .bold()
-                    .disabled(title.isEmpty || content.isEmpty)
+                    .disabled(title.isEmpty || content.isEmpty || isSending)
+                }
+            }
+            .alert("Notification Sent", isPresented: $showAlert) {
+                Button("OK") {
+                    dismiss()
+                }
+            } message: {
+                Text(alertMessage)
+            }
+            .overlay {
+                if isSending {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Text("Sending notification...")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                        .padding(32)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(16)
+                        .shadow(radius: 10)
+                    }
                 }
             }
         }
@@ -208,9 +258,37 @@ struct CreateAnnouncementView: View {
 
         do {
             try modelContext.save()
-            dismiss()
+
+            // Send push notification if enabled
+            if sendPushNotification {
+                Task {
+                    await sendPushNotificationToParents()
+                }
+            } else {
+                dismiss()
+            }
         } catch {
             print("Error saving announcement: \(error)")
         }
+    }
+
+    private func sendPushNotificationToParents() async {
+        isSending = true
+
+        do {
+            let count = try await pushService.sendAnnouncementNotification(
+                teamId: team.id,
+                title: title,
+                content: content
+            )
+
+            alertMessage = "Notification sent to \(count) parent\(count == 1 ? "" : "s")"
+            showAlert = true
+        } catch {
+            alertMessage = "Failed to send notification: \(error.localizedDescription)"
+            showAlert = true
+        }
+
+        isSending = false
     }
 }

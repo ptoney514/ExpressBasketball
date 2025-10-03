@@ -23,6 +23,12 @@ struct AddScheduleView: View {
     @State private var isHome = true
     @State private var notes = ""
     @State private var requireArrivalTime = false
+    @State private var sendPushNotification = true
+    @State private var isSending = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
+    @StateObject private var pushService = PushNotificationService.shared
 
     var body: some View {
         NavigationStack {
@@ -66,6 +72,22 @@ struct AddScheduleView: View {
                     TextField("Additional notes (optional)", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
+
+                Section {
+                    Toggle(isOn: $sendPushNotification) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Send Push Notification")
+                                .font(.body)
+                            Text("Notify all parents on ExpressUnited app")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("Parents will receive a push notification about this event")
+                }
             }
             .navigationTitle("Add Event")
             .navigationBarTitleDisplayMode(.inline)
@@ -74,6 +96,7 @@ struct AddScheduleView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .disabled(isSending)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -81,7 +104,34 @@ struct AddScheduleView: View {
                         saveSchedule()
                     }
                     .bold()
-                    .disabled(location.isEmpty)
+                    .disabled(location.isEmpty || isSending)
+                }
+            }
+            .alert("Notification Sent", isPresented: $showAlert) {
+                Button("OK") {
+                    dismiss()
+                }
+            } message: {
+                Text(alertMessage)
+            }
+            .overlay {
+                if isSending {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Text("Sending notification...")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                        .padding(32)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(16)
+                        .shadow(radius: 10)
+                    }
                 }
             }
         }
@@ -105,9 +155,47 @@ struct AddScheduleView: View {
 
         do {
             try modelContext.save()
-            dismiss()
+
+            // Send push notification if enabled
+            if sendPushNotification {
+                Task {
+                    await sendPushNotificationToParents()
+                }
+            } else {
+                dismiss()
+            }
         } catch {
             print("Error saving schedule: \(error)")
         }
+    }
+
+    private func sendPushNotificationToParents() async {
+        isSending = true
+
+        do {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
+            let timeString = formatter.string(from: date)
+
+            let notificationTitle = eventType == .game || eventType == .scrimmage
+                ? "New \(eventType.rawValue): \(opponent.isEmpty ? "TBD" : "vs \(opponent)")"
+                : "New \(eventType.rawValue)"
+
+            let notificationBody = "\(timeString)\n📍 \(location)"
+
+            let count = try await pushService.sendScheduleNotification(
+                teamId: team.id,
+                title: notificationTitle,
+                details: notificationBody
+            )
+
+            alertMessage = "Notification sent to \(count) parent\(count == 1 ? "" : "s")"
+            showAlert = true
+        } catch {
+            alertMessage = "Failed to send notification: \(error.localizedDescription)"
+            showAlert = true
+        }
+
+        isSending = false
     }
 }

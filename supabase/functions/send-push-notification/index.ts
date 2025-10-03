@@ -5,14 +5,14 @@ const APNS_HOST = 'api.push.apple.com'
 const APNS_SANDBOX_HOST = 'api.sandbox.push.apple.com'
 
 interface PushNotificationPayload {
-  deviceTokens: string[]
+  deviceTokens?: string[]
+  teamId?: string
   title: string
   body: string
   type: string
   data?: Record<string, any>
   badge?: number
   sound?: string
-  teamId?: string
 }
 
 async function sendAPNSNotification(
@@ -85,28 +85,67 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { 
-      deviceTokens, 
-      title, 
-      body, 
+    const {
+      deviceTokens: providedTokens,
+      title,
+      body,
       type = 'announcement',
       data = {},
       badge,
       sound = 'default',
-      teamId 
+      teamId
     }: PushNotificationPayload = await req.json()
 
     // Validate required fields
-    if (!deviceTokens || deviceTokens.length === 0) {
+    if (!title || !body) {
       return new Response(
-        JSON.stringify({ error: 'Device tokens required' }),
+        JSON.stringify({ error: 'Title and body required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
-    if (!title || !body) {
+    let deviceTokens: string[] = []
+
+    // If teamId is provided, query device tokens from database
+    if (teamId) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
+
+      const { data: tokens, error } = await supabase
+        .from('device_tokens')
+        .select('device_token')
+        .eq('team_id', teamId)
+        .eq('is_active', true)
+
+      if (error) {
+        console.error('Error querying device tokens:', error)
+        return new Response(
+          JSON.stringify({ error: 'Failed to query device tokens' }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+
+      deviceTokens = tokens?.map(t => t.device_token) || []
+
+      if (deviceTokens.length === 0) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            sent: 0,
+            failed: 0,
+            message: 'No active device tokens found for this team'
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+    } else if (providedTokens && providedTokens.length > 0) {
+      // Use provided device tokens
+      deviceTokens = providedTokens
+    } else {
       return new Response(
-        JSON.stringify({ error: 'Title and body required' }),
+        JSON.stringify({ error: 'Either teamId or deviceTokens required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
